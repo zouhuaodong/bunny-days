@@ -8,6 +8,8 @@ https://zouhuaodong.github.io/bunny-days/
 
 手机微信直接打开即可，建议收藏或添加到桌面。
 
+![小兔日和二维码](qr-github.png)
+
 ## 怎么玩
 
 - **摸摸**：手指在小兔身上滑动，会冒爱心、呼噜呼噜，亲密度上涨
