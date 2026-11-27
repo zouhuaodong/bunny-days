@@ -1,0 +1,206 @@
+/* =========================================================
+   Portrait layout — 500 x 1000
+   Loaded after styles.css; all overrides for vertical play.
+   ========================================================= */
+#stage{width:500px;height:1000px;border-radius:22px}
+#stage::after{box-shadow:inset 0 0 50px rgba(80,45,25,.15)}
+
+/* ---------- HUD ---------- */
+.hud{height:160px}
+.profile{left:10px;top:10px;width:252px;height:72px;border-radius:20px;padding:6px 9px 6px 7px;gap:8px}
+.avatar-wrap{width:56px;height:56px}
+.avatar-wrap>img{width:56px;height:56px;border-width:3px;box-shadow:0 0 0 2px #e8b07f,0 4px 8px rgba(100,60,30,.18)}
+.level-badge{width:22px;height:22px;font-size:11px;left:-5px;bottom:-3px}
+.name-row b{font-size:20px}
+.name-row span{font-size:10px;padding:2px 6px}
+.heart-row{margin-top:7px;gap:4px}
+.heart-row .heart{font-size:13px}
+.heart-bar{height:8px}
+.heart-row em{font-size:9.5px;min-width:38px}
+.edit-name{right:7px;top:5px;width:18px;height:18px;font-size:10px}
+.stats{left:10px;top:92px;gap:6px}
+.stat-card{width:156px;height:58px;border-radius:16px;padding:5px 7px;gap:6px}
+.stat-ico{width:33px;height:33px;font-size:17px}
+.stat-line span{font-size:11px}
+.stat-line b{font-size:14.5px}
+.stat-bar{height:5px;margin-top:5px}
+.currency{right:10px;top:14px;flex-direction:row;gap:5px}
+.currency-pill{height:34px;border-radius:13px;padding:0 5px 0 8px;gap:3px;min-width:0}
+.currency-pill span{font-size:15px}
+.currency-pill b{font-size:12px;min-width:23px}
+.currency-pill button{width:18px;height:18px;font-size:12px}
+.gear{width:34px;height:34px;font-size:17px}
+
+/* ---------- side rails ---------- */
+.rail{top:178px;gap:9px}
+.rail-left{left:10px}
+.rail-right{right:10px;top:198px}
+.side-btn{width:62px}
+.side-ico{width:52px;height:52px;font-size:24px;border-width:2.5px;box-shadow:0 4px 0 rgba(140,95,60,.22),inset 0 3px 0 rgba(255,255,255,.75)}
+.side-btn b{font-size:11.5px;padding:2px 7px;margin-top:-1px}
+
+/* ---------- room ---------- */
+.wall{height:56%}
+.wall-trim{top:55.4%;height:10px}
+.floor{height:44%}
+.floor::before{background:
+  repeating-linear-gradient(90deg,transparent 0 62px,rgba(91,52,28,.15) 62px 63px),
+  repeating-linear-gradient(180deg,transparent 0 48px,rgba(255,222,180,.08) 48px 49px),
+  radial-gradient(70% 80% at 50% 0%,rgba(255,239,210,.48),transparent 72%)}
+
+.window{left:112px;top:164px;width:276px;height:208px;border-width:7px;border-bottom-width:10px;border-radius:16px 16px 5px 5px}
+.sun{right:30px;top:26px;width:42px;height:42px}
+.c1{width:70px;left:24px;top:42px}
+.c2{width:52px;left:138px;top:72px}
+.t1{width:84px;height:68px}
+.t2{width:104px;height:86px}
+.t3{width:64px;height:52px;left:120px}
+.curtain{top:156px;width:38px;height:224px}
+.curtain.left{left:86px}
+.curtain.right{right:86px}
+.beam{top:220px;height:330px}
+.beam.b1{left:130px;width:70px}
+.beam.b2{left:290px;width:110px}
+
+/* hide wide-room decorations that would crowd the vertical view */
+.shelf,.wall-pic,.plant{display:none}
+
+.sofa{left:-12px;top:410px;width:286px;height:196px;transform:scale(.72);transform-origin:left top}
+.cat-tree{right:4px;top:378px;width:190px;height:268px;transform:scale(.68);transform-origin:right top}
+.rug{left:58px;top:684px;width:384px;height:94px}
+.rug-inner{top:12px;bottom:12px;left:22px;right:22px}
+.paw.p1{left:96px;top:33px}
+.paw.p2{right:96px;top:30px}
+.paw.p3{left:180px;top:52px}
+.dust.d1{left:150px;top:260px}
+.dust.d2{left:360px;top:210px}
+.dust.d3{left:400px;top:500px}
+.dust.d4{left:180px;top:480px}
+
+/* ---------- pet ---------- */
+.pet-wrap{width:230px;bottom:220px}
+.pet-shadow{width:174px;height:26px}
+.speech{left:55%;top:0;max-width:210px;font-size:12.5px;padding:8px 11px}
+.pet-acc .acc-item{transform-origin:center}
+
+/* ---------- bond / actions / heal ---------- */
+.bond-card{left:10px;bottom:116px;width:198px;height:66px;padding:7px 11px;border-radius:17px}
+.bond-title{font-size:11px}
+.bond-title em{font-size:9px}
+.bond-bar{height:9px;margin-top:5px}
+.bond-num{font-size:9px;margin-top:2px}
+.action-bar{width:480px;height:90px;bottom:14px;border-radius:25px;padding:6px 7px}
+.action-btn{width:88px;height:76px;border-radius:20px;gap:1px}
+.act-ico{width:49px;height:49px;border-radius:16px;font-size:26px}
+.action-btn span:last-child{font-size:12.5px}
+.heal-btn{right:10px;bottom:116px;width:86px;height:76px;border-radius:20px}
+.heal-ico{font-size:25px}
+.heal-btn b{font-size:11px}
+.heal-btn em{font-size:7.5px}
+
+/* ---------- night ---------- */
+.night-moon{right:54px;top:150px;width:64px;height:64px}
+.nstar.s1{left:100px;top:190px}.nstar.s2{left:210px;top:160px}.nstar.s3{left:360px;top:250px}.nstar.s4{left:150px;top:330px}.nstar.s5{left:410px;top:210px}
+.night-zzz{left:60%;top:39%}
+.night-layer p{bottom:300px;font-size:19px}
+#wakeBtn{bottom:226px}
+
+/* ---------- toast ---------- */
+.toast{top:166px;font-size:11.5px}
+
+/* ---------- sheets / modals ---------- */
+.overlay{padding:16px}
+.sheet{width:min(440px,94%);max-height:86%;border-radius:24px;padding:17px 18px 16px}
+.sheet-head h2{font-size:23px}
+.sheet-head p{font-size:10.5px}
+.sheet-close{width:31px;height:31px;font-size:18px}
+.sheet-body{font-size:12px}
+.tip{font-size:10px;line-height:1.65}
+.card-grid{grid-template-columns:repeat(3,1fr);gap:7px}
+.card-grid.four{grid-template-columns:repeat(3,1fr)}
+.choice-card{border-radius:15px;padding:9px 7px 8px}
+.choice-card .big-emoji{font-size:36px}
+.choice-card h3{font-size:13px;margin:3px 0 1px}
+.choice-card p{font-size:9.5px;margin-bottom:5px;line-height:1.4}
+.choice-card .price{font-size:10px;padding:2px 7px}
+.choice-card .owned-tag{font-size:8px;padding:2px 5px;right:5px;top:5px}
+.mini-stats{font-size:8.5px;gap:5px;margin-top:2px}
+.checkin-grid{grid-template-columns:repeat(4,1fr);gap:6px}
+.day-card{min-height:72px;padding:6px 3px}
+.day-card small{font-size:8px}
+.day-card .d-emoji{font-size:20px;margin:2px 0 0}
+.day-card b{font-size:8px}
+.day-card i{font-size:7px}
+.checkin-actions{margin-top:11px}
+.primary-btn{padding:10px 20px;font-size:11.5px}
+.task-list{gap:6px}
+.task-row{padding:8px 9px;border-radius:12px;gap:7px}
+.task-row .t-emoji{font-size:19px;width:23px}
+.task-row .t-main b{font-size:11.5px}
+.task-row .t-main small{font-size:9px}
+.claim-btn{padding:6px 9px;font-size:9.5px}
+.setting-row{padding:9px 10px;font-size:10.5px;border-radius:12px;margin-bottom:6px}
+.location-grid{grid-template-columns:1fr;gap:8px}
+.location-card{display:flex;align-items:center;text-align:left;gap:10px;padding:10px 12px;border-radius:15px}
+.location-card .loc-emoji{font-size:33px;flex:0 0 auto}
+.location-card h3{margin:0 0 1px;font-size:12px}
+.location-card p{margin:0;font-size:9px;line-height:1.4;flex:1}
+.location-card small{font-size:8.5px;flex:0 0 auto}
+.adventure-result{margin-top:10px;padding:11px}
+.adventure-result .r-emoji{font-size:34px}
+.adventure-result h3{font-size:13px}
+.adventure-result p{font-size:9.5px}
+.battle-arena{min-height:190px;padding:8px 10px 12px}
+.fighter{width:130px}
+.fighter .sprite{font-size:62px}
+.fighter h3{font-size:11px}
+.battle-log{font-size:9.5px;margin:6px 0}
+.battle-actions{gap:6px;margin-top:7px}
+.battle-actions button{padding:8px 12px;font-size:10px;border-radius:10px}
+
+/* ---------- mini games portrait ---------- */
+.mini-box{width:460px;border-radius:22px;padding:11px 12px 10px}
+.mini-head{font-size:10.5px;margin-bottom:6px}
+.mini-head b{font-size:14px}
+.mini-head .m-stats{gap:8px;font-size:10px}
+.mini-close{width:27px;height:27px;font-size:15px}
+.mini-field{height:430px;border-radius:16px}
+.mini-foot{font-size:9px;margin-top:6px}
+.mini-btn{padding:6px 12px;font-size:9.5px}
+.result-inner{width:290px;padding:17px}
+.result-inner .r-emoji{font-size:42px}
+.result-inner h3{font-size:16px}
+.result-inner p{font-size:9.5px}
+
+/* ---------- name dialog ---------- */
+.name-card{width:300px;padding:18px}
+.name-card h3{font-size:16px}
+.name-card input{height:40px;font-size:16px}
+
+/* ---------- vertical / rotation ---------- */
+#rotate{display:none}
+@media (orientation:portrait){
+  #rotate{display:none!important}
+  #stage{filter:none!important;pointer-events:auto!important}
+}
+@media (orientation:landscape) and (max-height:600px){
+  #rotate{display:flex!important}
+  #stage{filter:blur(4px) brightness(.55);pointer-events:none}
+}
+.rotate-phone{animation:portraitHint 2.4s ease-in-out infinite}
+@keyframes portraitHint{0%,20%{transform:rotate(90deg)}55%,85%{transform:rotate(0)}100%{transform:rotate(90deg)}}
+
+/* keep tiny screens readable */
+@media (max-height:740px){
+  .action-bar{height:84px;bottom:12px}
+  .action-btn{height:71px}
+  .bond-card,.heal-btn{bottom:106px}
+  .pet-wrap{bottom:208px}
+}
+@media (max-height:650px){
+  .action-bar{height:78px;bottom:10px}
+  .action-btn{height:66px}
+  .act-ico{width:43px;height:43px;font-size:23px}
+  .bond-card,.heal-btn{bottom:96px}
+  .pet-wrap{bottom:192px}
+}

@@ -3,5 +3,8 @@ tools/
 *.zip
 qr-lan.png
 preview.png
+preview-parkour.png
 game-*.png
+portrait-*.png
+pk-*.png
 *.log

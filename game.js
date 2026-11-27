@@ -17,7 +17,7 @@ var gameRoot = $('#gameRoot');
 var toastEl = $('#toast');
 var nightLayer = $('#nightLayer');
 
-var W = 1000, H = 562;
+var W = 500, H = 1000;
 var KEY = 'rabbit-house-game-v1';
 var state = null;
 var audioCtx = null, master = null, purrNodes = null;
@@ -53,9 +53,9 @@ function defaultState(){
     coins:500, gems:10,
     food:{carrot:5, apple:2, cookie:1},
     owned:['none','flower'], outfit:'none',
-    counts:{pet:0,feed:0,play:0,dress:0,sleep:0,checkin:0,minigame:0,adventure:0,battle:0},
-    daily:{date:dateKey(),pet:0,feed:0,play:0,sleep:0,minigame:0,claimed:[]},
-    lastCheckin:'', streak:0, lastHeal:0, sound:1, lastSeen:now
+    counts:{pet:0,feed:0,play:0,dress:0,sleep:0,checkin:0,minigame:0,adventure:0,battle:0,parkour:0},
+    daily:{date:dateKey(),pet:0,feed:0,play:0,sleep:0,minigame:0,parkour:0,claimed:[]},
+    lastCheckin:'', streak:0, lastHeal:0, sound:1, parkourBest:0, lastSeen:now
   };
 }
 function loadState(){
@@ -63,7 +63,7 @@ function loadState(){
   try{ raw = JSON.parse(localStorage.getItem(KEY) || 'null'); }catch(e){}
   if (raw && typeof raw === 'object'){
     ['name'].forEach(function(k){ if (typeof raw[k] === 'string' && raw[k].trim()) s[k] = raw[k].slice(0,8); });
-    ['level','xp','hunger','mood','energy','coins','gems','streak','lastHeal','sound','lastSeen'].forEach(function(k){
+    ['level','xp','hunger','mood','energy','coins','gems','streak','lastHeal','sound','lastSeen','parkourBest'].forEach(function(k){
       if (typeof raw[k] === 'number' && isFinite(raw[k])) s[k] = raw[k];
     });
     s.xp = clamp(s.xp);
@@ -78,11 +78,11 @@ function loadState(){
       if (s.owned.indexOf('none') < 0) s.owned.unshift('none');
     }
     if (OUTFITS[raw.outfit] && s.owned.indexOf(raw.outfit) >= 0) s.outfit = raw.outfit;
-    if (raw.counts) ['pet','feed','play','dress','sleep','checkin','minigame','adventure','battle'].forEach(function(k){
+    if (raw.counts) ['pet','feed','play','dress','sleep','checkin','minigame','adventure','battle','parkour'].forEach(function(k){
       if (typeof raw.counts[k] === 'number') s.counts[k] = Math.max(0,Math.floor(raw.counts[k]));
     });
     if (raw.daily && raw.daily.date === dateKey()){
-      ['pet','feed','play','sleep','minigame'].forEach(function(k){
+      ['pet','feed','play','sleep','minigame','parkour'].forEach(function(k){
         if (typeof raw.daily[k] === 'number') s.daily[k] = Math.max(0,Math.floor(raw.daily[k]));
       });
       if (Array.isArray(raw.daily.claimed)) s.daily.claimed = raw.daily.claimed.filter(function(x){ return typeof x === 'string'; });
@@ -108,7 +108,7 @@ function save(){
 function ensureDaily(){
   var today = dateKey();
   if (!state.daily || state.daily.date !== today){
-    state.daily = {date:today, pet:0, feed:0, play:0, sleep:0, minigame:0, claimed:[]};
+    state.daily = {date:today, pet:0, feed:0, play:0, sleep:0, minigame:0, parkour:0, claimed:[]};
     save();
   }
 }
@@ -656,7 +656,8 @@ function openRewards(){
     {id:'feed', name:'给东喂食 3 次', emoji:'🥕', need:3, reward:40},
     {id:'play', name:'陪东玩 1 次', emoji:'🧶', need:1, reward:30},
     {id:'sleep', name:'哄东睡 1 次', emoji:'😴', need:1, reward:25},
-    {id:'minigame', name:'完成 1 次小游戏', emoji:'🎮', need:1, reward:50}
+    {id:'minigame', name:'完成 1 次小游戏', emoji:'🎮', need:1, reward:50},
+    {id:'parkour', name:'完成 1 次跑酷', emoji:'🏃', need:1, reward:60}
   ];
   var html = '<div class="task-list">';
   tasks.forEach(function(t){
@@ -847,8 +848,9 @@ function openCarrotGame(){
       c.className = 'falling-carrot';
       c.type = 'button';
       c.textContent = '🥕';
-      c.style.left = rand(18, 700) + 'px';
+      c.style.left = rand(18, field.clientWidth - 62) + 'px';
       var dur = rand(2.4,3.6);
+      c.style.setProperty('--fall', (field.clientHeight + 70) + 'px');
       c.style.animationDuration = dur + 's';
       c.addEventListener('click', function(e){
         e.stopPropagation();
@@ -909,8 +911,8 @@ function openYarnGame(){
     ball.className = 'mini-yarn'; ball.type = 'button'; ball.textContent = '🧶';
     field.appendChild(ball);
     function place(){
-      ball.style.left = rand(30, 650) + 'px';
-      ball.style.top = rand(30, 210) + 'px';
+      ball.style.left = rand(25, field.clientWidth - 95) + 'px';
+      ball.style.top = rand(25, field.clientHeight - 100) + 'px';
     }
     place();
     ball.addEventListener('click', function(e){
@@ -975,10 +977,10 @@ function healAction(){
 function openSettings(){
   if (uiLocked && !$('.overlay')) return;
   var html = '<div class="setting-row"><span>🔊 游戏音效</span><button class="switch' + (soundOn?' on':'') + '" id="soundSwitch" aria-label="切换音效"></button></div>' +
-    '<div class="setting-row"><span>🖥️ 全屏 / 横屏</span><button class="primary-btn" id="fullBtn" style="padding:7px 14px;font-size:10px">尝试横屏</button></div>' +
+    '<div class="setting-row"><span>🖥️ 全屏 / 竖屏</span><button class="primary-btn" id="fullBtn" style="padding:7px 14px;font-size:10px">尝试竖屏</button></div>' +
     '<div class="setting-row"><span>📱 当前版本</span><span style="font-size:10px;color:#9a7a63">兔兔屋 v1.0</span></div>' +
     '<div class="setting-row"><span>🗑️ 重新开始</span><button id="resetBtn" style="color:#b55d4f;font-size:10.5px;font-weight:700">清空存档</button></div>' +
-    '<p class="tip">游戏会自动保存；微信里建议横屏并把页面添加到桌面。音效需要先点一下页面才会开启。</p>';
+    '<p class="tip">游戏会自动保存；微信里建议竖屏并把页面添加到桌面。音效需要先点一下页面才会开启。</p>';
   openOverlay('设置', '把兔兔屋调成你喜欢的样子', html, function(body){
     $('#soundSwitch', body).addEventListener('click', function(){
       soundOn = !soundOn;
@@ -997,10 +999,10 @@ function goFullscreen(){
   var p = el.requestFullscreen ? el.requestFullscreen() : (el.webkitRequestFullscreen ? el.webkitRequestFullscreen() : null);
   if (p && p.then) p.catch(function(){});
   if (screen.orientation && screen.orientation.lock){
-    screen.orientation.lock('landscape').catch(function(){});
+    screen.orientation.lock('portrait').catch(function(){});
   }
   setTimeout(fitStage, 400);
-  toast('如果画面没有旋转，请把手机横过来');
+  toast('如果画面没有旋转，请把手机竖过来');
 }
 function openShop(type){
   if (uiLocked) return;
@@ -1041,6 +1043,673 @@ function saveName(){
   speak('你好呀，我是' + v + '。');
 }
 
+/* ---------------- rabbit parkour ---------------- */
+/*
+  Vertical 2.5D port of the 3-lane Unity parkour demo:
+  three lanes, jump / slide / lane change, randomly spawned
+  obstacles, recycled road segments and collision game over.
+  The run happens on a canvas inside the already-portrait shell.
+*/
+var PK_LANES = [125, 250, 375];
+var PK_PLAYER_Y = 812;
+var PK_HORIZON = 258;
+var pk = null;
+var pkCanvas = null, pkCtx = null, pkImg = null, pkImgReady = false;
+var pkRaf = 0, pkLast = 0, pkCountdownTimer = null, pkOverTimer = null;
+var pkSwipe = null;
+
+function pkDefault(){
+  return {
+    active:false, running:false, paused:false, over:false, energyCharged:false,
+    lane:1, x:250, jumpT:0, slideT:0, speed:.34, t:0,
+    distance:0, score:0, coinCount:0, carrotCount:0,
+    obstacles:[], pickups:[], spawnTimer:.7, roadOffset:0,
+    shake:0, hudTimer:0, result:null
+  };
+}
+function pkJumpHeight(){
+  if (!pk || pk.jumpT <= 0) return 0;
+  var p = 1 - pk.jumpT / .62;
+  return Math.sin(Math.max(0,Math.min(1,p)) * Math.PI) * 84;
+}
+function pkInit(){
+  pkCanvas = $('#pkCanvas');
+  if (!pkCanvas) return;
+  pkCanvas.width = 1000;
+  pkCanvas.height = 2000;
+  pkCtx = pkCanvas.getContext('2d');
+  pkCtx.setTransform(2,0,0,2,0,0);
+  pk = pkDefault();
+  pkImg = new Image();
+  pkImg.onload = function(){ pkImgReady = true; if (pk && pk.active) pkDraw(); };
+  pkImg.src = 'bunny.png';
+
+  $('#pkStartBtn').addEventListener('click', pkBegin);
+  $('#pkStartClose').addEventListener('click', closeParkour);
+  $('#pkPause').addEventListener('click', pkPauseGame);
+  $('#pkQuit').addEventListener('click', function(){
+    if (pk && pk.running) pkPauseGame();
+    else closeParkour();
+  });
+  $('#pkResume').addEventListener('click', pkResume);
+  $('#pkExit').addEventListener('click', closeParkour);
+  $$('[data-pk]').forEach(function(btn){
+    btn.addEventListener('click', function(){ pkAction(btn.getAttribute('data-pk')); });
+  });
+
+  pkCanvas.addEventListener('pointerdown', function(e){
+    if (!pk || !pk.running) return;
+    e.preventDefault();
+    pkSwipe = {x:e.clientX, y:e.clientY, t:performance.now()};
+    try{ pkCanvas.setPointerCapture(e.pointerId); }catch(err){}
+  });
+  pkCanvas.addEventListener('pointerup', function(e){
+    if (!pkSwipe || !pk || !pk.running) { pkSwipe = null; return; }
+    var dx = e.clientX - pkSwipe.x, dy = e.clientY - pkSwipe.y;
+    pkSwipe = null;
+    if (Math.abs(dx) > 26 && Math.abs(dx) > Math.abs(dy)){
+      pkAction(dx > 0 ? 'right' : 'left');
+    } else if (dy < -26){
+      pkAction('jump');
+    } else if (dy > 26){
+      pkAction('slide');
+    } else {
+      var r = pkCanvas.getBoundingClientRect();
+      var rx = (e.clientX - r.left) / Math.max(1,r.width);
+      if (rx < .36) pkAction('left');
+      else if (rx > .64) pkAction('right');
+      else pkAction('jump');
+    }
+  });
+  pkCanvas.addEventListener('pointercancel', function(){ pkSwipe = null; });
+
+  document.addEventListener('keydown', function(e){
+    if (!pk || !pk.active || !pk.running) return;
+    if (document.activeElement && /INPUT|TEXTAREA/.test(document.activeElement.tagName)) return;
+    var k = e.key;
+    if (k === 'ArrowLeft' || k === 'a' || k === 'A'){ e.preventDefault(); pkAction('left'); }
+    else if (k === 'ArrowRight' || k === 'd' || k === 'D'){ e.preventDefault(); pkAction('right'); }
+    else if (k === 'ArrowUp' || k === 'w' || k === 'W' || k === ' '){ e.preventDefault(); pkAction('jump'); }
+    else if (k === 'ArrowDown' || k === 's' || k === 'S'){ e.preventDefault(); pkAction('slide'); }
+  });
+  document.addEventListener('visibilitychange', function(){
+    if (document.hidden && pk && pk.running) pkPauseGame();
+  });
+}
+
+function openParkour(){
+  if (sleeping){ toast('东睡着了，等它醒了再去跑酷吧'); return; }
+  if (state.energy < 10){ toast('精力不足，先让东休息一下吧'); return; }
+  if (pk && pk.active) return;
+  closeOverlay(true);
+  if (gameRoot.classList.contains('show')) closeMini();
+  hideSpeech();
+  uiLocked = true;
+  $('#parkourRoot').classList.add('show');
+  $('#parkourRoot').setAttribute('aria-hidden','false');
+  pk = pkDefault();
+  pk.active = true;
+  pk.energyCharged = false;
+  $('#pkStart').classList.add('show');
+  $('#pkOver').classList.remove('show');
+  $('#pkPauseOver').classList.remove('show');
+  $('#pkCount').classList.remove('show','go');
+  $('#pkBest').textContent = state.parkourBest || 0;
+  pkReset();
+  pkDraw();
+}
+
+function pkReset(){
+  if (!pk) return;
+  pk.running = false;
+  pk.over = false;
+  pk.paused = false;
+  pk.t = 0;
+  pk.speed = .34;
+  pk.distance = 0;
+  pk.score = 0;
+  pk.coinCount = 0;
+  pk.carrotCount = 0;
+  pk.lane = 1;
+  pk.x = 250;
+  pk.jumpT = 0;
+  pk.slideT = 0;
+  pk.obstacles = [];
+  pk.pickups = [];
+  pk.spawnTimer = .72;
+  pk.roadOffset = 0;
+  pk.shake = 0;
+  pk.result = null;
+  $('#pkDist').textContent = '0';
+  $('#pkScore').textContent = '0';
+  $('#pkBest').textContent = state.parkourBest || 0;
+}
+
+function pkBegin(){
+  if (!pk || !pk.active) return;
+  if (!pk.energyCharged){
+    state.energy = clamp(state.energy - 10);
+    pk.energyCharged = true;
+    save(); render();
+  }
+  $('#pkStart').classList.remove('show');
+  $('#pkOver').classList.remove('show');
+  $('#pkPauseOver').classList.remove('show');
+  $('#pkCount').classList.remove('go');
+  pkReset();
+  pkDraw();
+  audio();
+
+  var n = 3;
+  $('#pkCount').textContent = n;
+  $('#pkCount').classList.add('show');
+  clearInterval(pkCountdownTimer);
+  pkCountdownTimer = setInterval(function(){
+    if (!pk || !pk.active){ clearInterval(pkCountdownTimer); return; }
+    n -= 1;
+    if (n > 0){
+      $('#pkCount').textContent = n;
+      $('#pkCount').classList.remove('go');
+      tone(620, .08, 'sine', .04);
+    } else if (n === 0){
+      $('#pkCount').textContent = 'GO!';
+      $('#pkCount').classList.add('go');
+      tone(880, .16, 'sine', .05, 1320);
+    } else {
+      clearInterval(pkCountdownTimer);
+      pkCountdownTimer = null;
+      $('#pkCount').classList.remove('show','go');
+      pk.running = true;
+      pk.last = performance.now();
+      pkLast = pk.last;
+      pkRaf = requestAnimationFrame(pkLoop);
+    }
+  }, 700);
+}
+
+function pkPauseGame(){
+  if (!pk || !pk.running) return;
+  pk.running = false;
+  cancelAnimationFrame(pkRaf);
+  pkRaf = 0;
+  pk.paused = true;
+  $('#pkPauseOver').classList.add('show');
+}
+function pkResume(){
+  if (!pk || !pk.active) return;
+  $('#pkPauseOver').classList.remove('show');
+  pk.paused = false;
+  pk.running = true;
+  pk.last = performance.now();
+  pkLast = pk.last;
+  pkRaf = requestAnimationFrame(pkLoop);
+}
+function pkAction(action){
+  if (!pk || !pk.running) return;
+  if (action === 'left' && pk.lane > 0){ pk.lane -= 1; tone(660,.07,'sine',.035,760); }
+  else if (action === 'right' && pk.lane < 2){ pk.lane += 1; tone(660,.07,'sine',.035,760); }
+  else if (action === 'jump'){
+    if (pk.jumpT <= 0){ pk.jumpT = .62; pk.slideT = 0; tone(520,.12,'sine',.045,820); }
+  } else if (action === 'slide'){
+    if (pk.slideT <= 0){ pk.slideT = .62; pk.jumpT = 0; tone(280,.13,'triangle',.045,150); }
+  }
+}
+
+function pkSpawnWave(){
+  if (!pk) return;
+  var lanes = [0,1,2];
+  for (var i=lanes.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var tmp=lanes[i]; lanes[i]=lanes[j]; lanes[j]=tmp; }
+  var count = Math.random() < .32 ? 2 : 1;
+  for (var k=0;k<count;k++){
+    var roll = Math.random();
+    var type = roll < .42 ? 'truck' : roll < .75 ? 'barrier' : 'gate';
+    pk.obstacles.push({lane:lanes[k], z:.02, type:type, checked:false, color:pkTruckColor()});
+  }
+  var free = lanes.slice(count);
+  if (free.length && Math.random() < .82){
+    var kind = Math.random() < .58 ? 'coin' : 'carrot';
+    var num = Math.random() < .36 ? 3 : 1;
+    for (var m=0;m<num;m++){
+      pk.pickups.push({lane:free[0], z:.03 + m*.055, type:kind, checked:false});
+    }
+  }
+}
+
+function pkLoop(now){
+  if (!pk || !pk.running) return;
+  var dt = Math.min(.05, (now - pk.last) / 1000);
+  pk.last = now;
+  pk.t += dt;
+  pk.speed = Math.min(.86, .34 + pk.t * .0105);
+  pk.distance += pk.speed * dt * 42;
+  pk.roadOffset = (pk.roadOffset + pk.speed * dt * 1.1) % 1;
+
+  var targetX = PK_LANES[pk.lane];
+  pk.x += (targetX - pk.x) * Math.min(1, dt * 14);
+  if (pk.jumpT > 0) pk.jumpT = Math.max(0, pk.jumpT - dt);
+  if (pk.slideT > 0) pk.slideT = Math.max(0, pk.slideT - dt);
+  if (pk.shake > 0) pk.shake = Math.max(0, pk.shake - dt * 30);
+
+  pk.spawnTimer -= dt;
+  if (pk.spawnTimer <= 0){
+    pkSpawnWave();
+    pk.spawnTimer = Math.max(.48, .94 - pk.t * .0065) * rand(.86, 1.14);
+  }
+
+  for (var i=pk.obstacles.length-1;i>=0;i--){
+    var o = pk.obstacles[i];
+    o.z += pk.speed * dt;
+    if (!o.checked && o.z >= .94){
+      o.checked = true;
+      if (o.lane === pk.lane){
+        var cleared = false;
+        if (o.type === 'barrier' && pkJumpHeight() > 36) cleared = true;
+        if (o.type === 'gate' && pk.slideT > .08) cleared = true;
+        if (!cleared){ pkCrash(); return; }
+      }
+    }
+    if (o.z > 1.12) pk.obstacles.splice(i,1);
+  }
+  for (var j=pk.pickups.length-1;j>=0;j--){
+    var p = pk.pickups[j];
+    p.z += pk.speed * dt;
+    if (!p.checked && p.z >= .9 && p.lane === pk.lane){
+      p.checked = true;
+      if (p.type === 'coin'){ pk.coinCount += 1; coinSound(); }
+      else { pk.carrotCount += 1; bounceSound(); }
+      pk.pickups.splice(j,1);
+      continue;
+    }
+    if (p.z > 1.08) pk.pickups.splice(j,1);
+  }
+
+  pk.hudTimer -= dt;
+  if (pk.hudTimer <= 0){
+    pk.hudTimer = .08;
+    pkUpdateHud();
+  }
+  pkDraw();
+  pkRaf = requestAnimationFrame(pkLoop);
+}
+
+function pkUpdateHud(){
+  if (!pk) return;
+  var score = Math.floor(pk.distance) + pk.coinCount * 10 + pk.carrotCount * 20;
+  pk.score = score;
+  $('#pkDist').textContent = Math.floor(pk.distance);
+  $('#pkScore').textContent = score;
+}
+
+function pkCrash(){
+  if (!pk || pk.over) return;
+  pk.over = true;
+  pk.running = false;
+  cancelAnimationFrame(pkRaf);
+  pkRaf = 0;
+  pk.shake = 9;
+  hitSound();
+  pkApplyResult();
+  pkDraw();
+  clearTimeout(pkOverTimer);
+  pkOverTimer = setTimeout(function(){
+    if (!pk || !pk.active) return;
+    pkShowResult();
+  }, 520);
+}
+
+function pkApplyResult(){
+  if (!pk) return;
+  var score = Math.floor(pk.distance) + pk.coinCount * 10 + pk.carrotCount * 20;
+  var rewardCoins = Math.floor(pk.coinCount * 2 + pk.distance / 25);
+  var rewardCarrots = pk.carrotCount;
+  var isBest = score > (state.parkourBest || 0);
+  if (isBest) state.parkourBest = score;
+  state.coins += rewardCoins;
+  state.food.carrot += rewardCarrots;
+  state.mood = clamp(state.mood + Math.min(15, 3 + score / 100));
+  state.counts.parkour = (state.counts.parkour || 0) + 1;
+  bumpDaily('parkour', 1);
+  addXp(2 + Math.floor(score / 40));
+  save(); render();
+  pk.result = {score:score, distance:Math.floor(pk.distance), coins:rewardCoins, carrots:rewardCarrots, best:state.parkourBest, isBest:isBest};
+  $('#pkBest').textContent = state.parkourBest;
+  if (isBest) chime();
+}
+
+function pkShowResult(){
+  if (!pk || !pk.result) return;
+  var r = pk.result;
+  var card = $('#pkOverCard');
+  card.innerHTML =
+    '<div class="pk-result-emoji">' + (r.isBest ? '🏆' : '🥕') + '</div>' +
+    '<div class="pk-kicker">' + (r.isBest ? '新纪录' : '本局结束') + '</div>' +
+    '<h2>跑了 ' + r.distance + ' 米</h2>' +
+    '<div class="pk-result-grid">' +
+      '<div class="pk-result-row"><span>得分</span><b>' + r.score + '</b></div>' +
+      '<div class="pk-result-row"><span>最佳纪录</span><b>' + r.best + '</b></div>' +
+      '<div class="pk-result-row reward"><span>带回金币</span><b>+' + r.coins + '</b></div>' +
+      '<div class="pk-result-row reward"><span>带回胡萝卜</span><b>+' + r.carrots + '</b></div>' +
+    '</div>' +
+    '<div class="pk-result-best">精力 -10 · 经验 +' + (2 + Math.floor(r.score / 40)) + '</div>' +
+    '<div class="pk-over-btns"><button class="pk-primary" id="pkAgain">再来一次</button><button class="pk-ghost" id="pkHome">回小屋</button></div>';
+  $('#pkAgain').addEventListener('click', function(){
+    $('#pkOver').classList.remove('show');
+    pkBegin();
+  });
+  $('#pkHome').addEventListener('click', closeParkour);
+  $('#pkOver').classList.add('show');
+}
+
+function closeParkour(){
+  cancelAnimationFrame(pkRaf);
+  pkRaf = 0;
+  clearInterval(pkCountdownTimer);
+  pkCountdownTimer = null;
+  clearTimeout(pkOverTimer);
+  pkOverTimer = null;
+  $('#pkCount').classList.remove('show','go');
+  $('#pkStart').classList.remove('show');
+  $('#pkOver').classList.remove('show');
+  $('#pkPauseOver').classList.remove('show');
+  $('#parkourRoot').classList.remove('show');
+  $('#parkourRoot').setAttribute('aria-hidden','true');
+  if (pk){ pk.active = false; pk.running = false; pk.paused = false; }
+  uiLocked = false;
+  render();
+}
+
+/* ---------------- coordinate projection / canvas art ---------------- */
+function pkProject(lane,z){
+  var t = .1 + z * .9;
+  return {
+    x: 250 + (PK_LANES[lane] - 250) * t,
+    y: PK_HORIZON + z * 560,
+    s: .2 + z * .9
+  };
+}
+function pkRt(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+function pkDraw(){
+  if (!pk || !pkCtx) return;
+  var ctx = pkCtx;
+  ctx.save();
+  ctx.clearRect(0,0,500,1000);
+  if (pk.shake > 0){
+    ctx.translate(rand(-pk.shake,pk.shake), rand(-pk.shake,pk.shake));
+  }
+  pkDrawWorld(ctx);
+  var obs = pk.obstacles.slice().sort(function(a,b){ return a.z - b.z; });
+  for (var i=0;i<obs.length;i++) pkDrawObstacle(ctx, obs[i]);
+  var picks = pk.pickups.slice().sort(function(a,b){ return a.z - b.z; });
+  for (var j=0;j<picks.length;j++) pkDrawPickup(ctx, picks[j]);
+  pkDrawPlayer(ctx);
+  if (pk.shake > 0){
+    ctx.fillStyle = 'rgba(255,90,60,.12)';
+    ctx.fillRect(-20,-20,540,1040);
+  }
+  ctx.restore();
+}
+
+function pkDrawWorld(ctx){
+  var sky = ctx.createLinearGradient(0,0,0,360);
+  sky.addColorStop(0,'#cfe9f2');
+  sky.addColorStop(.5,'#f4e2c8');
+  sky.addColorStop(1,'#f8d2a2');
+  ctx.fillStyle = sky;
+  ctx.fillRect(0,0,500,360);
+
+  ctx.save();
+  var sun = ctx.createRadialGradient(390,94,6,390,94,72);
+  sun.addColorStop(0,'rgba(255,248,210,.98)');
+  sun.addColorStop(.4,'rgba(255,225,160,.75)');
+  sun.addColorStop(1,'rgba(255,210,140,0)');
+  ctx.fillStyle = sun;
+  ctx.beginPath(); ctx.arc(390,94,72,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#ffe6a8';
+  ctx.beginPath(); ctx.arc(390,94,30,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+
+  ctx.fillStyle = 'rgba(255,255,255,.85)';
+  pkCloud(ctx, 78, 84, 1.1);
+  pkCloud(ctx, 250, 52, .8);
+  pkCloud(ctx, 154, 150, .62);
+
+  var hill = ctx.createLinearGradient(0,230,0,330);
+  hill.addColorStop(0,'#a9cf9b');
+  hill.addColorStop(1,'#7eab79');
+  ctx.fillStyle = hill;
+  ctx.beginPath();
+  ctx.moveTo(-30,300);
+  ctx.quadraticCurveTo(60,210,150,270);
+  ctx.quadraticCurveTo(230,205,330,262);
+  ctx.quadraticCurveTo(420,210,530,292);
+  ctx.lineTo(530,360); ctx.lineTo(-30,360); ctx.closePath(); ctx.fill();
+
+  ctx.fillStyle = '#92ba83';
+  for (var t=0;t<9;t++){
+    var tx = 18 + t * 57;
+    var th = 34 + ((t*17)%28);
+    ctx.beginPath(); ctx.arc(tx, 286 - th*.35, th*.55, Math.PI, 0); ctx.fill();
+    ctx.fillRect(tx-2, 286 - th*.35, 4, th*.35);
+  }
+
+  ctx.fillStyle = '#6f9b68';
+  ctx.fillRect(0,300,500,700);
+
+  ctx.fillStyle = '#6d4a35';
+  ctx.beginPath();
+  ctx.moveTo(214,258);
+  ctx.lineTo(286,258);
+  ctx.lineTo(506,1000);
+  ctx.lineTo(-6,1000);
+  ctx.closePath();
+  ctx.fill();
+
+  var roadGlow = ctx.createLinearGradient(0,258,0,1000);
+  roadGlow.addColorStop(0,'rgba(255,205,150,.28)');
+  roadGlow.addColorStop(.45,'rgba(120,70,40,0)');
+  roadGlow.addColorStop(1,'rgba(40,20,12,.22)');
+  ctx.fillStyle = roadGlow;
+  ctx.fillRect(0,258,500,742);
+
+  ctx.strokeStyle = '#f2d0a1';
+  ctx.lineWidth = 6;
+  ctx.beginPath(); ctx.moveTo(214,258); ctx.lineTo(-6,1000); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(286,258); ctx.lineTo(506,1000); ctx.stroke();
+
+  ctx.strokeStyle = 'rgba(255,239,209,.62)';
+  ctx.lineWidth = 3;
+  ctx.setLineDash([22, 30]);
+  ctx.lineDashOffset = -pk.roadOffset * 90;
+  for (var l=1;l<3;l++){
+    var bottom = 183 + (l-1) * 134;
+    ctx.beginPath(); ctx.moveTo(242 + (l-1)*16, 258); ctx.lineTo(bottom, 1000); ctx.stroke();
+  }
+  ctx.setLineDash([]);
+
+  for (var q=0;q<7;q++){
+    var z = (q/7 + pk.roadOffset) % 1;
+    var y = 258 + z * 742;
+    var x1 = 250 + (8-250) * (.1+z*.9);
+    var x2 = 250 + (492-250) * (.1+z*.9);
+    ctx.strokeStyle = 'rgba(255,226,187,' + (.03 + z*.045) + ')';
+    ctx.lineWidth = 2 + z*3;
+    ctx.beginPath(); ctx.moveTo(x1,y); ctx.lineTo(x2,y); ctx.stroke();
+  }
+
+  pkDrawRoadside(ctx, -1);
+  pkDrawRoadside(ctx, 1);
+
+  if (pk.running && pk.speed > .52){
+    ctx.strokeStyle = 'rgba(255,245,220,.2)';
+    ctx.lineWidth = 2;
+    for (var s=0;s<6;s++){
+      var sy = 330 + ((s*97 + pk.roadOffset*400)%520);
+      var sx = 40 + ((s*73)%420);
+      ctx.beginPath(); ctx.moveTo(sx,sy); ctx.lineTo(sx + (sx<250?-34:34), sy-40); ctx.stroke();
+    }
+  }
+}
+
+function pkCloud(ctx,x,y,s){
+  ctx.save(); ctx.globalAlpha = .72; ctx.translate(x,y); ctx.scale(s,s);
+  ctx.beginPath();
+  ctx.arc(-22,0,18,0,Math.PI*2);
+  ctx.arc(0,-8,25,0,Math.PI*2);
+  ctx.arc(26,1,17,0,Math.PI*2);
+  ctx.arc(4,8,21,0,Math.PI*2);
+  ctx.fill();
+  ctx.restore();
+}
+
+function pkDrawRoadside(ctx, side){
+  for (var i=0;i<5;i++){
+    var z = (i/5 + pk.roadOffset * .55) % 1;
+    if (z < .05) continue;
+    var y = 258 + z * 742;
+    var edge = side < 0 ? 250 + (8-250) * (.1+z*.9) : 250 + (492-250) * (.1+z*.9);
+    var s = .18 + z*.9;
+    ctx.save();
+    ctx.translate(edge + side*24*s, y);
+    ctx.scale(s,s);
+    ctx.strokeStyle = '#5e4434';
+    ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0,-84); ctx.stroke();
+    ctx.fillStyle = '#f6d79e';
+    ctx.beginPath(); ctx.arc(0,-90,11,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle = 'rgba(255,211,124,.22)';
+    ctx.beginPath(); ctx.arc(0,-90,26,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+}
+
+function pkDrawObstacle(ctx,o){
+  var p = pkProject(o.lane,o.z);
+  if (o.z > 1.05) return;
+  ctx.save();
+  ctx.translate(p.x,p.y);
+  ctx.scale(p.s,p.s);
+  ctx.globalAlpha = Math.min(1, .35 + o.z*2);
+  ctx.fillStyle = 'rgba(40,20,12,.26)';
+  ctx.beginPath(); ctx.ellipse(0,3,48,10,0,0,Math.PI*2); ctx.fill();
+  if (o.type === 'truck') pkDrawTruck(ctx, o.color || '#7fb0bd');
+  else if (o.type === 'barrier') pkDrawBarrier(ctx);
+  else pkDrawGate(ctx);
+  ctx.restore();
+}
+
+function pkDrawTruck(ctx, color){
+  ctx.fillStyle = '#3a2a22';
+  ctx.beginPath(); ctx.arc(-27,-5,10,0,Math.PI*2); ctx.arc(28,-5,10,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#cfd8d8';
+  ctx.beginPath(); ctx.arc(-27,-5,4,0,Math.PI*2); ctx.arc(28,-5,4,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#e8a35f';
+  pkRt(ctx,-44,-48,34,44,5); ctx.fill();
+  ctx.fillStyle = '#b7e2ec';
+  pkRt(ctx,-39,-42,24,17,3); ctx.fill();
+  ctx.fillStyle = '#4b7e8e';
+  pkRt(ctx,-42,-24,6,8,2); ctx.fill();
+  ctx.fillStyle = color || '#7fb0bd';
+  pkRt(ctx,-12,-78,56,72,6); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,.18)';
+  pkRt(ctx,-7,-72,22,60,4); ctx.fill();
+  ctx.fillStyle = 'rgba(60,30,15,.16)';
+  ctx.fillRect(22,-70,3,58);
+  ctx.fillStyle = '#fff0c8';
+  ctx.beginPath(); ctx.arc(-38,-55,3,0,Math.PI*2); ctx.arc(40,-50,3,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#5c3b2a';
+  ctx.fillRect(-45,-50,90,6);
+  ctx.fillStyle = '#2f241e';
+  ctx.fillRect(-44,-6,88,7);
+}
+function pkTruckColor(){
+  var colors = ['#7fb0bd','#d98b6b','#8ea7cc','#b9a06c'];
+  return colors[Math.floor(Math.random()*colors.length)];
+}
+function pkDrawBarrier(ctx){
+  ctx.fillStyle = '#6b4c36';
+  ctx.fillRect(-42,-16,7,16); ctx.fillRect(35,-16,7,16);
+  ctx.fillStyle = '#f08a52';
+  pkRt(ctx,-48,-36,96,22,4); ctx.fill();
+  ctx.fillStyle = '#fff3da';
+  for (var i=0;i<4;i++){ ctx.save(); ctx.translate(-38 + i*24,-32); ctx.rotate(-.35); ctx.fillRect(0,0,10,26); ctx.restore(); }
+  ctx.fillStyle = '#8b4d30';
+  ctx.fillRect(-48,-38,96,4);
+  ctx.fillStyle = '#ffe5ad';
+  ctx.beginPath(); ctx.arc(0,-52,9,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#c65032';
+  ctx.font = 'bold 16px sans-serif'; ctx.textAlign='center'; ctx.fillText('!',0,-46);
+}
+function pkDrawGate(ctx){
+  ctx.fillStyle = '#5b4030';
+  ctx.fillRect(-45,-88,8,88); ctx.fillRect(37,-88,8,88);
+  ctx.fillStyle = '#d96d4d';
+  pkRt(ctx,-50,-98,100,18,5); ctx.fill();
+  ctx.fillStyle = '#fff1d2';
+  ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText('SLIDE',0,-85);
+  ctx.fillStyle = 'rgba(255,240,210,.92)';
+  for (var i=0;i<4;i++){ ctx.fillRect(-38 + i*21,-72,12,30); }
+  ctx.fillStyle = 'rgba(217,109,77,.5)';
+  ctx.beginPath(); ctx.arc(0,-114,8,0,Math.PI*2); ctx.fill();
+}
+
+function pkDrawPickup(ctx,p){
+  var pos = pkProject(p.lane,p.z);
+  ctx.save();
+  ctx.translate(pos.x,pos.y);
+  ctx.scale(.5 + p.z*.75, .5 + p.z*.75);
+  ctx.globalAlpha = Math.min(1,.4+p.z*2);
+  if (p.type === 'coin'){
+    ctx.fillStyle = 'rgba(255,220,120,.18)';
+    ctx.beginPath(); ctx.arc(0,-8,26,0,Math.PI*2); ctx.fill();
+    var g = ctx.createLinearGradient(-12,-22,12,4);
+    g.addColorStop(0,'#fff1a8'); g.addColorStop(.5,'#ffc94c'); g.addColorStop(1,'#e69a2c');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(0,-8,13,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle = '#fff0b0'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = '#fff7cf';
+    ctx.beginPath(); ctx.arc(-4,-12,4,0,Math.PI*2); ctx.fill();
+  } else {
+    ctx.font = '30px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('🥕',0,-10);
+    ctx.fillStyle = 'rgba(255,225,170,.16)';
+    ctx.beginPath(); ctx.arc(0,-10,24,0,Math.PI*2); ctx.fill();
+  }
+  ctx.restore();
+}
+
+function pkDrawPlayer(ctx){
+  var x = pk.x, jump = pkJumpHeight(), y = PK_PLAYER_Y;
+  ctx.save();
+  ctx.fillStyle = 'rgba(55,30,18,.28)';
+  ctx.beginPath(); ctx.ellipse(x, y + 5, 46 - jump*.14, 10, 0, 0, Math.PI*2); ctx.fill();
+  ctx.translate(x, y - jump);
+  if (pk.slideT > 0) ctx.scale(1.02, .56);
+  if (pkImgReady){
+    ctx.drawImage(pkImg, -50, -117, 100, 117);
+  } else {
+    ctx.fillStyle = '#e7c39d';
+    ctx.beginPath(); ctx.ellipse(0,-54,38,43,0,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(-19,-100,10,24,-.2,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(17,-102,9,22,.22,0,Math.PI*2); ctx.fill();
+  }
+  ctx.restore();
+  if (pk.jumpT > 0 && pk.jumpT < .2){
+    ctx.fillStyle = 'rgba(255,238,205,.45)';
+    for (var i=0;i<4;i++){
+      ctx.beginPath(); ctx.arc(x + rand(-30,30), y - 4 + rand(-4,5), rand(3,7), 0, Math.PI*2); ctx.fill();
+    }
+  }
+}
+
 /* ---------------- init ---------------- */
 function init(){
   state = loadState();
@@ -1048,6 +1717,7 @@ function init(){
   ensureDaily();
   fitStage();
   render();
+  pkInit();
   window.addEventListener('resize', fitStage);
   window.addEventListener('orientationchange', function(){ setTimeout(fitStage, 260); });
   if (window.visualViewport) window.visualViewport.addEventListener('resize', fitStage);
@@ -1078,6 +1748,7 @@ function init(){
       else if (a === 'minigame') openCarrotGame();
       else if (a === 'adventure') openAdventure();
       else if (a === 'battle') openBattle();
+      else if (a === 'parkour') openParkour();
     });
   });
   $$('[data-shop]').forEach(function(btn){

@@ -1,0 +1,135 @@
+/* =========================================================
+   Rabbit Parkour — portrait canvas runner
+   Mechanics ported from the 3-lane Unity parkour reference:
+   3 lanes, jump / slide / lane change, random obstacles,
+   recycling road segments, collision game over.
+   ========================================================= */
+#parkourRoot{
+  position:absolute;inset:0;z-index:65;display:none;overflow:hidden;
+  background:#1d140f;
+}
+#parkourRoot.show{display:block}
+#parkourRoot .pk{position:absolute;inset:0;overflow:hidden;background:#2b1d14;font-family:-apple-system,BlinkMacSystemFont,"SF Pro SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;color:#fff6e8}
+#pkCanvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;z-index:1}
+
+/* ---------- top HUD ---------- */
+.pk-hud{
+  position:absolute;left:14px;right:14px;top:14px;z-index:6;
+  display:flex;align-items:flex-start;gap:6px;pointer-events:none;
+}
+.pk-stat{
+  display:flex;align-items:baseline;gap:3px;height:36px;padding:0 10px;
+  border-radius:13px;background:rgba(255,248,236,.94);
+  border:1.5px solid rgba(255,255,255,.8);
+  box-shadow:0 4px 12px rgba(50,28,15,.22);
+  color:#5b3d2c;
+}
+.pk-stat span{font-size:9.5px;color:#98745b;font-weight:700}
+.pk-stat b{font-size:17px;font-variant-numeric:tabular-nums;color:#4d3021}
+.pk-stat em{font-style:normal;font-size:9px;color:#98745b}
+.pk-best{
+  height:28px;display:flex;align-items:center;gap:3px;padding:0 9px;margin-top:4px;
+  border-radius:99px;background:rgba(50,30,18,.42);border:1px solid rgba(255,235,205,.28);
+  color:#ffe7c6;font-size:8.5px;white-space:nowrap;
+}
+.pk-best b{font-size:10px;color:#fff4df}
+.pk-hud-btns{margin-left:auto;display:flex;gap:5px;pointer-events:auto}
+.pk-hud-btns button{
+  width:34px;height:34px;border-radius:50%;
+  background:rgba(255,248,236,.94);color:#5b3d2c;
+  font-size:13px;font-weight:800;
+  border:1.5px solid rgba(255,255,255,.8);
+  box-shadow:0 4px 10px rgba(50,28,15,.22);
+}
+.pk-hud-btns button:active{transform:translateY(2px)}
+
+/* ---------- controls ---------- */
+.pk-controls{
+  position:absolute;left:16px;right:16px;bottom:26px;z-index:4;
+  display:grid;grid-template-columns:repeat(4,1fr);gap:9px;
+}
+.pk-controls button{
+  height:60px;border-radius:18px;
+  background:linear-gradient(180deg,rgba(255,249,238,.96),rgba(244,220,190,.92));
+  border:2px solid rgba(255,255,255,.85);
+  box-shadow:0 5px 0 rgba(100,60,32,.28),0 10px 18px rgba(30,17,10,.22);
+  color:#5d3c28;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;
+  touch-action:manipulation;
+}
+.pk-controls button b{font-size:23px;line-height:1;font-weight:800}
+.pk-controls button small{font-size:8.5px;font-weight:700;letter-spacing:.08em;margin-top:2px}
+.pk-controls button:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(100,60,32,.3)}
+.pk-controls .pk-jump{background:linear-gradient(180deg,#fff3dc,#f5cf9c)}
+.pk-controls .pk-slide{background:linear-gradient(180deg,#ffe7db,#f5b99d)}
+
+/* ---------- overlays / cards ---------- */
+.pk-overlay{
+  position:absolute;inset:0;z-index:8;display:flex;align-items:center;justify-content:center;
+  padding:20px;background:rgba(18,11,7,.62);backdrop-filter:blur(5px);
+  opacity:0;visibility:hidden;pointer-events:none;transition:opacity .24s ease,visibility .24s;
+}
+.pk-overlay.show{opacity:1;visibility:visible;pointer-events:auto}
+.pk-card{
+  width:390px;max-width:92%;box-sizing:border-box;
+  padding:22px 22px 18px;border-radius:24px;text-align:center;
+  background:linear-gradient(180deg,#fff9ee,#f8e6d0);
+  border:2px solid rgba(255,255,255,.9);
+  box-shadow:0 18px 44px rgba(25,12,6,.44),inset 0 2px 0 rgba(255,255,255,.85);
+  color:#5a3c29;
+}
+.pk-kicker{font-size:10px;font-weight:800;letter-spacing:.16em;color:#b07c58;text-transform:uppercase}
+.pk-card h2{margin:6px 0 5px;font-size:27px;letter-spacing:.05em;color:#4b3021;font-family:"Songti SC","STSong",serif}
+.pk-card p{margin:0 0 12px;font-size:11.5px;line-height:1.7;color:#98745b}
+.pk-how{display:flex;justify-content:center;gap:7px;margin:11px 0 14px}
+.pk-how>div{flex:1;background:rgba(255,255,255,.55);border:1px solid rgba(210,170,135,.35);border-radius:13px;padding:7px 3px}
+.pk-how span{display:block;font-size:16px;font-weight:800;color:#6d4932;line-height:1.1}
+.pk-how small{display:block;font-size:8px;color:#a08068;margin-top:3px}
+.pk-primary{
+  display:block;width:100%;height:45px;margin:4px 0 6px;border-radius:14px;
+  background:linear-gradient(180deg,#f5a47c,#e7855f);color:#fff9ee;
+  font-size:14px;font-weight:800;letter-spacing:.08em;
+  border:1.5px solid #ffd2b8;box-shadow:0 4px 0 #b96245,0 8px 16px rgba(140,70,40,.25);
+}
+.pk-primary:active{transform:translateY(3px);box-shadow:0 1px 0 #b96245}
+.pk-ghost{
+  display:block;width:100%;height:35px;border-radius:12px;
+  color:#9a755b;font-size:11px;font-weight:700;letter-spacing:.06em;
+  background:transparent;
+}
+.pk-ghost:active{background:rgba(160,110,75,.1)}
+
+/* countdown */
+.pk-count{
+  position:absolute;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;
+  font-size:108px;font-weight:900;color:#fff6e4;letter-spacing:.04em;
+  text-shadow:0 8px 0 rgba(120,65,35,.35),0 16px 30px rgba(0,0,0,.35);
+  opacity:0;pointer-events:none;transform:scale(.7);transition:opacity .16s,transform .16s;
+}
+.pk-count.show{opacity:1;transform:scale(1)}
+.pk-count.go{font-size:76px;color:#ffe09a}
+
+/* result */
+.pk-result-emoji{font-size:46px;line-height:1;margin-bottom:2px;filter:drop-shadow(0 5px 6px rgba(100,55,25,.18))}
+.pk-result-grid{display:flex;flex-direction:column;gap:5px;margin:12px 0 10px;text-align:left}
+.pk-result-row{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;border-radius:10px;background:rgba(255,255,255,.5);font-size:11px;color:#8c6a52}
+.pk-result-row b{font-size:13px;color:#5a3a28}
+.pk-result-row.reward{background:rgba(248,196,134,.28);color:#8a5b35}
+.pk-result-row.reward b{color:#a25c2f}
+.pk-result-best{margin-top:7px;font-size:9.5px;color:#a07c62;letter-spacing:.05em}
+.pk-over-btns{display:flex;gap:8px;margin-top:10px}
+.pk-over-btns .pk-primary,.pk-over-btns .pk-ghost{flex:1;margin:0;height:40px;font-size:12px}
+.pk-over-btns .pk-ghost{border:1.5px solid rgba(180,130,95,.28);height:40px;background:rgba(255,255,255,.4)}
+
+/* portrait rail icon */
+.side-ico.peach{background:linear-gradient(180deg,#ffe2c8,#f3b184)}
+
+/* small adjustments for the 375-wide class of phones */
+@media (max-height:740px){
+  .pk-controls{bottom:18px}
+  .pk-controls button{height:54px;border-radius:16px}
+  .pk-controls button b{font-size:21px}
+  .pk-hud{top:10px}
+  .pk-stat{height:32px}
+  .pk-stat b{font-size:15px}
+  .pk-hud-btns button{width:31px;height:31px}
+}

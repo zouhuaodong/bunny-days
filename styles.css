@@ -365,7 +365,7 @@ img{display:block}
 @keyframes popIn{0%{opacity:0;transform:scale(.9)}100%{opacity:1;transform:scale(1)}}
 @keyframes twinkle{0%,100%{opacity:.2;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
 @keyframes zzzFloat{0%{opacity:0;transform:translate(0,8px) rotate(-8deg)}25%{opacity:1}75%{opacity:.8}100%{opacity:0;transform:translate(8px,-22px) rotate(-4deg)}}
-@keyframes carrotFall{from{transform:translateY(0) rotate(0)}to{transform:translateY(370px) rotate(20deg)}}
+@keyframes carrotFall{from{transform:translateY(0) rotate(0)}to{transform:translateY(var(--fall,480px)) rotate(20deg)}}
 @keyframes carrotPop{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.8)}}
 @keyframes rotatePhone{0%,20%{transform:rotate(0)}55%,85%{transform:rotate(90deg)}100%{transform:rotate(0)}}
 @media (max-height:420px){#stage{border-radius:0}}
