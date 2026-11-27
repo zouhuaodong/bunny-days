@@ -128,7 +128,23 @@ img{display:block}
 .pet-wrap.sleeping .pet-img{transform:translateY(8px) scale(.985,.97) rotate(1.5deg);filter:brightness(.7) saturate(.9) drop-shadow(0 10px 14px rgba(20,15,25,.3))}
 .pet-wrap.hiding .pet-img{opacity:0;transform:translateX(72px) scale(.86) rotate(6deg)}
 .pet-wrap.eating .pet-img{animation:chewPhoto .24s ease-in-out 4}
+.pet-wrap.blush .pet-img{filter:saturate(1.08) drop-shadow(0 14px 14px rgba(75,45,28,.22))}
+.pet-wrap.hugging .pet-img{animation:hugPhoto .55s ease-in-out 2}
+.pet-wrap.kissing .pet-img{animation:kissPhoto .7s ease-in-out 2}
+.pet-wrap.snuggling .pet-img{animation:snugglePhoto .6s ease-in-out 2}
+.pet-wrap.lifted .pet-img{animation:liftPhoto .85s cubic-bezier(.2,.8,.3,1) 1}
 @keyframes chewPhoto{0%,100%{transform:translateY(0) scale(1,1)}50%{transform:translateY(2px) scale(1.012,.988) rotate(.4deg)}}
+@keyframes hugPhoto{0%,100%{transform:translateY(0) scale(1) rotate(0)}35%{transform:translateY(3px) scale(1.035,.975) rotate(-1.5deg)}70%{transform:translateY(-3px) scale(.985,1.025) rotate(1.5deg)}}
+@keyframes kissPhoto{0%,100%{transform:translateY(0) scale(1) rotate(0)}40%{transform:translateY(-5px) scale(1.035,1.02) rotate(-2deg)}70%{transform:translateY(-1px) scale(.99,1.01) rotate(2deg)}}
+@keyframes snugglePhoto{0%,100%{transform:translateX(0) rotate(0)}25%{transform:translateX(-4px) rotate(-1.5deg)}75%{transform:translateX(4px) rotate(1.5deg)}}
+@keyframes liftPhoto{0%,100%{transform:translateY(0) rotate(0)}45%{transform:translateY(-30px) rotate(-2deg)}70%{transform:translateY(-22px) rotate(1.5deg)}}
+.pet-blush{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .3s;z-index:4}
+.pet-blush i{position:absolute;top:55%;width:34px;height:16px;border-radius:50%;background:radial-gradient(ellipse,rgba(242,138,143,.9),rgba(242,138,143,0) 72%);filter:blur(2px)}
+.pet-blush i:first-child{left:23%}
+.pet-blush i:last-child{right:23%}
+.pet-wrap.blush .pet-blush{opacity:1}
+.fx-kiss{position:absolute;font-size:34px;z-index:46;pointer-events:none;margin:-17px 0 0 -17px;animation:kissFloat 1.15s ease-out forwards;filter:drop-shadow(0 3px 4px rgba(160,70,80,.2))}
+@keyframes kissFloat{0%{opacity:0;transform:translate(0,0) scale(.35) rotate(-12deg)}28%{opacity:1;transform:translate(0,-12px) scale(1.12) rotate(4deg)}100%{opacity:0;transform:translate(8px,-62px) scale(.9) rotate(-8deg)}}
 .stat-card.low{background:linear-gradient(180deg,#fff1e7,#f8d7c8)}
 .pet-acc{position:absolute;inset:0;pointer-events:none;z-index:3}
 .acc-item{position:absolute;line-height:1;filter:drop-shadow(0 4px 5px rgba(80,45,25,.22));animation:accIn .4s var(--ease)}
@@ -204,6 +220,7 @@ img{display:block}
 .action-btn[data-action="play"] .act-ico{background:linear-gradient(180deg,#f7f0ff,#d7c9f2)}
 .action-btn[data-action="dress"] .act-ico{background:linear-gradient(180deg,#eef8ff,#bfe0f2)}
 .action-btn[data-action="sleep"] .act-ico{background:linear-gradient(180deg,#f0edff,#c9c3ea)}
+.action-btn[data-action="affection"] .act-ico{background:linear-gradient(180deg,#ffe9f0,#f3b5c7)}
 .heal-btn{position:absolute;right:18px;bottom:16px;width:92px;height:78px;border-radius:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;z-index:30;background:linear-gradient(180deg,#fff5f1,#f8d3ca);border:2px solid rgba(255,255,255,.95);box-shadow:0 5px 0 rgba(180,100,85,.22),0 10px 20px rgba(100,60,40,.14)}
 .heal-ico{font-size:27px;line-height:1;filter:drop-shadow(0 2px 2px rgba(150,70,60,.2))}
 .heal-btn b{font-size:12px;color:#9d4e44}
@@ -236,6 +253,9 @@ img{display:block}
 /* food / dress cards */
 .card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .card-grid.four{grid-template-columns:repeat(4,1fr)}
+.card-grid.affection-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+.affection-grid .choice-card{padding:12px 9px 10px}
+.affection-grid .big-emoji{font-size:44px}
 .choice-card{position:relative;border-radius:18px;background:rgba(255,255,255,.55);border:2px solid rgba(255,255,255,.8);padding:12px 10px 10px;text-align:center;box-shadow:0 4px 0 rgba(160,115,80,.1);transition:.2s var(--ease)}
 .choice-card:hover{transform:translateY(-2px)}
 .choice-card .big-emoji{font-size:42px;line-height:1.1;filter:drop-shadow(0 4px 4px rgba(100,60,30,.16))}

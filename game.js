@@ -24,6 +24,7 @@ var audioCtx = null, master = null, purrNodes = null;
 var soundOn = true;
 var sleeping = false, uiLocked = false, petting = false;
 var petCounted = false, petMoves = 0, petGainTimer = 0, petHeartTimer = 0;
+var petHoldTimer = null, petHoldTriggered = false, petMoved = false, petStartTime = 0, lastPetTap = 0;
 var speechTimer = null, toastTimer = null;
 var mini = null;
 var battle = null;
@@ -53,8 +54,8 @@ function defaultState(){
     coins:500, gems:10,
     food:{carrot:5, apple:2, cookie:1},
     owned:['none','flower'], outfit:'none',
-    counts:{pet:0,feed:0,play:0,dress:0,sleep:0,checkin:0,minigame:0,adventure:0,battle:0,parkour:0},
-    daily:{date:dateKey(),pet:0,feed:0,play:0,sleep:0,minigame:0,parkour:0,claimed:[]},
+    counts:{pet:0,feed:0,play:0,dress:0,sleep:0,checkin:0,minigame:0,adventure:0,battle:0,parkour:0,affection:0},
+    daily:{date:dateKey(),pet:0,feed:0,play:0,sleep:0,minigame:0,parkour:0,affection:0,claimed:[]},
     lastCheckin:'', streak:0, lastHeal:0, sound:1, parkourBest:0, lastSeen:now
   };
 }
@@ -78,11 +79,11 @@ function loadState(){
       if (s.owned.indexOf('none') < 0) s.owned.unshift('none');
     }
     if (OUTFITS[raw.outfit] && s.owned.indexOf(raw.outfit) >= 0) s.outfit = raw.outfit;
-    if (raw.counts) ['pet','feed','play','dress','sleep','checkin','minigame','adventure','battle','parkour'].forEach(function(k){
+    if (raw.counts) ['pet','feed','play','dress','sleep','checkin','minigame','adventure','battle','parkour','affection'].forEach(function(k){
       if (typeof raw.counts[k] === 'number') s.counts[k] = Math.max(0,Math.floor(raw.counts[k]));
     });
     if (raw.daily && raw.daily.date === dateKey()){
-      ['pet','feed','play','sleep','minigame','parkour'].forEach(function(k){
+      ['pet','feed','play','sleep','minigame','parkour','affection'].forEach(function(k){
         if (typeof raw.daily[k] === 'number') s.daily[k] = Math.max(0,Math.floor(raw.daily[k]));
       });
       if (Array.isArray(raw.daily.claimed)) s.daily.claimed = raw.daily.claimed.filter(function(x){ return typeof x === 'string'; });
@@ -108,7 +109,7 @@ function save(){
 function ensureDaily(){
   var today = dateKey();
   if (!state.daily || state.daily.date !== today){
-    state.daily = {date:today, pet:0, feed:0, play:0, sleep:0, minigame:0, parkour:0, claimed:[]};
+    state.daily = {date:today, pet:0, feed:0, play:0, sleep:0, minigame:0, parkour:0, affection:0, claimed:[]};
     save();
   }
 }
@@ -240,6 +241,8 @@ function toast(text){
   toastTimer = setTimeout(function(){ toastEl.classList.remove('show'); }, 2500);
 }
 function speak(text, ms){
+  text = String(text == null ? '' : text);
+  if (text && text.indexOf('鸦鸦主人') < 0) text = '鸦鸦主人，' + text;
   speech.innerHTML = text;
   speech.classList.add('show');
   clearTimeout(speechTimer);
@@ -383,9 +386,21 @@ function startPet(e){
   petting = true;
   petCounted = false;
   petMoves = 0;
+  petHoldTriggered = false;
+  petMoved = false;
+  petStartTime = performance.now();
+  clearTimeout(petHoldTimer);
   petWrap.classList.add('petting');
   startPurr();
   squeak();
+  if (e){
+    petHoldTimer = setTimeout(function(){
+      if (petting && !petMoved && !sleeping && !uiLocked){
+        petHoldTriggered = true;
+        doAffection('hug');
+      }
+    }, 700);
+  }
   var p = petPoint();
   heartAt(p.x, p.y, true);
   if (!petCounted){
@@ -402,6 +417,8 @@ function startPet(e){
 }
 function movePet(e){
   if (!petting) return;
+  petMoved = true;
+  clearTimeout(petHoldTimer);
   var now = performance.now();
   if (now - petHeartTimer > 110){
     petHeartTimer = now;
@@ -422,14 +439,28 @@ function movePet(e){
 }
 function endPet(){
   if (!petting) return;
+  clearTimeout(petHoldTimer);
   petting = false;
   petWrap.classList.remove('petting');
   stopPurr();
+  if (petHoldTriggered){
+    petHoldTriggered = false;
+    return;
+  }
+  var now = performance.now();
+  if (!petMoved && now - petStartTime < 320){
+    if (now - lastPetTap < 360){
+      lastPetTap = 0;
+      doAffection('kiss');
+      return;
+    }
+    lastPetTap = now;
+  }
   addXp(Math.min(2.4, petMoves * .35));
   addStat('mood', Math.min(3, petMoves * .4));
   save(); render();
-  if (petMoves >= 5) speak(pick(['呼噜呼噜…还要还要。','你的手好暖和。','再陪我一会儿嘛。']));
-  else speak(pick(['嘿嘿，好痒呀。','摸摸头，今天也辛苦啦。','你来了，我就开心。']));
+  if (petMoves >= 5) speak(pick(['呼噜呼噜…还要还要。','鸦鸦主人的手好暖和。','再陪我一会儿嘛，鸦鸦主人。']));
+  else speak(pick(['嘿嘿，好痒呀，鸦鸦主人。','摸摸头，今天也辛苦啦。','鸦鸦主人来了，我就开心。']));
 }
 function petAction(){
   if (sleeping){ toast('东睡着了，轻一点哦'); return; }
@@ -443,6 +474,94 @@ function heartsBurst(p){
   for (var i=0;i<3;i++){
     (function(k){ setTimeout(function(){ heartAt(p.x + rand(-25,25), p.y + rand(-18,18), false); }, k*100); })(i);
   }
+}
+function heartRing(p,n){
+  for (var i=0;i<(n||8);i++){
+    (function(k){
+      var a = (k/(n||8)) * Math.PI*2;
+      setTimeout(function(){
+        heartAt(p.x + Math.cos(a)*64 + rand(-5,5), p.y + Math.sin(a)*46 + rand(-5,5), false);
+      }, k*45);
+    })(i);
+  }
+}
+function kissAt(x,y){
+  var el = document.createElement('div');
+  el.className = 'fx-kiss';
+  el.textContent = '💋';
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+  fxLayer.appendChild(el);
+  setTimeout(function(){ el.remove(); }, 1200);
+}
+function openAffection(){
+  if (sleeping){ toast('东睡着了，等它醒了再贴贴吧'); return; }
+  if (uiLocked) return;
+  ensureDaily();
+  var html = '<div class="card-grid affection-grid">' +
+    '<button class="choice-card" data-affection="hug"><div class="big-emoji">🫂</div><h3>抱抱</h3><p>把东抱进怀里，听它呼噜呼噜。</p><span class="price">抱一下</span></button>' +
+    '<button class="choice-card" data-affection="kiss"><div class="big-emoji">😘</div><h3>亲亲</h3><p>在额头上亲一下，东会害羞。</p><span class="price">亲一下</span></button>' +
+    '<button class="choice-card" data-affection="snuggle"><div class="big-emoji">🥰</div><h3>贴贴</h3><p>脸贴脸蹭一蹭，暖呼呼的。</p><span class="price">贴一下</span></button>' +
+    '<button class="choice-card" data-affection="lift"><div class="big-emoji">🙌</div><h3>举高高</h3><p>把东举起来转一圈，看它多开心。</p><span class="price">举一下</span></button>' +
+    '</div><p class="tip">鸦鸦主人，也可以双击东亲亲，长按东抱抱。</p>';
+  openOverlay('和东亲昵', '鸦鸦主人，想怎么抱抱东？', html, function(body){
+    $$('[data-affection]', body).forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var type = btn.getAttribute('data-affection');
+        closeOverlay();
+        setTimeout(function(){ doAffection(type); }, 120);
+      });
+    });
+  });
+}
+function doAffection(type){
+  if (!state || sleeping) return;
+  ensureDaily();
+  var p = petPoint();
+  var mood = 7, xp = 3, line = '';
+  petWrap.classList.remove('hugging','kissing','snuggling','lifted');
+  petWrap.classList.add('blush');
+  clearTimeout(petWrap._blushTimer);
+  petWrap._blushTimer = setTimeout(function(){ petWrap.classList.remove('blush'); }, 1700);
+
+  if (type === 'hug'){
+    petWrap.classList.add('hugging');
+    heartRing(p, 8);
+    startPurr();
+    setTimeout(stopPurr, 1200);
+    mood = 7; xp = 3;
+    line = '鸦鸦主人，抱紧一点…<br>你的怀里好暖和，我想一直赖着。';
+  } else if (type === 'kiss'){
+    petWrap.classList.add('kissing');
+    kissAt(p.x, p.y - 42);
+    heartsBurst(p);
+    squeak();
+    mood = 9; xp = 3.6;
+    line = '鸦鸦主人亲亲…<br>东的脸都红啦，心也跳得好快。';
+  } else if (type === 'snuggle'){
+    petWrap.classList.add('snuggling');
+    heartRing(p, 6);
+    startPurr();
+    setTimeout(stopPurr, 1000);
+    mood = 8; xp = 3.2;
+    line = '鸦鸦主人，脸贴脸…<br>再蹭一下下嘛。';
+  } else {
+    petWrap.classList.add('lifted');
+    starsAt(p.x, p.y - 36, 6);
+    tone(520,.12,'sine',.045,760);
+    setTimeout(function(){ tone(780,.16,'sine',.04,1120); }, 120);
+    mood = 10; xp = 4;
+    line = '鸦鸦主人，举高高！<br>我飞起来啦，最喜欢鸦鸦主人了。';
+  }
+  setTimeout(function(){
+    petWrap.classList.remove('hugging','kissing','snuggling','lifted');
+  }, 1000);
+  state.counts.affection = (state.counts.affection || 0) + 1;
+  bumpDaily('affection', 1);
+  addStat('mood', mood);
+  addXp(xp);
+  save(); render();
+  speak(line);
 }
 
 /* ---------------- feed ---------------- */
@@ -657,7 +776,8 @@ function openRewards(){
     {id:'play', name:'陪东玩 1 次', emoji:'🧶', need:1, reward:30},
     {id:'sleep', name:'哄东睡 1 次', emoji:'😴', need:1, reward:25},
     {id:'minigame', name:'完成 1 次小游戏', emoji:'🎮', need:1, reward:50},
-    {id:'parkour', name:'完成 1 次跑酷', emoji:'🏃', need:1, reward:60}
+    {id:'parkour', name:'完成 1 次跑酷', emoji:'🏃', need:1, reward:60},
+    {id:'affection', name:'和东亲昵 3 次', emoji:'💗', need:3, reward:50}
   ];
   var html = '<div class="task-list">';
   tasks.forEach(function(t){
@@ -1735,6 +1855,7 @@ function init(){
       if (a === 'pet') petAction();
       else if (a === 'feed') openFeed();
       else if (a === 'play') openYarnGame();
+      else if (a === 'affection') openAffection();
       else if (a === 'dress') openDress();
       else if (a === 'sleep') sleepAction();
     });
@@ -1776,16 +1897,16 @@ function init(){
 }
 function greeting(){
   if (!state.counts.pet && !state.counts.feed && !state.counts.play && !state.counts.sleep){
-    return 'Hi～我是' + state.name + '。<br>一起玩吧！';
+    return '鸦鸦主人，你回来啦～<br>我是东，今天也一起玩吧！';
   }
   var h = new Date().getHours();
-  if (state.hunger < 25) return '肚子好饿…<br>有胡萝卜吗？';
-  if (state.mood < 25) return '今天有点没精神…<br>陪陪我好不好？';
-  if (h >= 5 && h < 10) return '早安～<br>今天也一起玩吧！';
-  if (h >= 10 && h < 14) return '阳光刚刚好，<br>要一起晒太阳吗？';
-  if (h >= 14 && h < 18) return '你闻到胡萝卜的味道了吗？';
-  if (h >= 18 && h < 23) return '今天也辛苦了，<br>摸摸我吧。';
-  return '这么晚还没睡？<br>那我陪你一会儿。';
+  if (state.hunger < 25) return '鸦鸦主人，肚子好饿…<br>有胡萝卜吗？';
+  if (state.mood < 25) return '鸦鸦主人，今天有点没精神…<br>抱抱我好不好？';
+  if (h >= 5 && h < 10) return '鸦鸦主人，早安～<br>今天也一起玩吧！';
+  if (h >= 10 && h < 14) return '鸦鸦主人，阳光刚刚好，<br>要一起晒太阳吗？';
+  if (h >= 14 && h < 18) return '鸦鸦主人，你闻到胡萝卜的味道了吗？';
+  if (h >= 18 && h < 23) return '鸦鸦主人，今天也辛苦了，<br>摸摸我吧。';
+  return '鸦鸦主人，这么晚还没睡？<br>那我陪你一会儿。';
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
 else init();

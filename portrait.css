@@ -90,7 +90,7 @@
 .bond-bar{height:9px;margin-top:5px}
 .bond-num{font-size:9px;margin-top:2px}
 .action-bar{width:480px;height:90px;bottom:14px;border-radius:25px;padding:6px 7px}
-.action-btn{width:88px;height:76px;border-radius:20px;gap:1px}
+.action-btn{width:74px;height:76px;border-radius:20px;gap:1px}
 .act-ico{width:49px;height:49px;border-radius:16px;font-size:26px}
 .action-btn span:last-child{font-size:12.5px}
 .heal-btn{right:10px;bottom:116px;width:86px;height:76px;border-radius:20px}
