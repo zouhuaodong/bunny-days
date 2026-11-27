@@ -1,0 +1,6 @@
+tools/
+.ghconfig/
+*.zip
+qr-lan.png
+preview.png
+*.log
