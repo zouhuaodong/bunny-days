@@ -16,7 +16,7 @@
   --ease:cubic-bezier(.22,1,.36,1);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#1a110d;font-family:-apple-system,BlinkMacSystemFont,"SF Pro SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink);user-select:none;-webkit-user-select:none}
+html,body{width:100%;height:100%;margin:0;overflow:hidden;background:radial-gradient(ellipse at 50% 45%,#3d291d 0%,#24170f 48%,#120c08 100%);font-family:-apple-system,BlinkMacSystemFont,"SF Pro SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink);user-select:none;-webkit-user-select:none}
 button{font:inherit;color:inherit;border:0;background:none;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 button:active{transform:scale(.96)}
 img{display:block}
