@@ -1,262 +1,30 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="format-detection" content="telephone=no">
-<meta name="theme-color" content="#2b1e16">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>东的小兔屋 · 互动养成</title>
-<meta name="description" content="和东一起住在软软的小兔屋里：抚摸、喂食、玩耍、换装、睡觉、亲昵、小游戏、冒险、战斗和竖屏跑酷。东会叫玩家“鸦鸦主人”。">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23fbe8d3'/%3E%3Cellipse cx='24' cy='18' rx='8' ry='15' fill='%23efc394'/%3E%3Cellipse cx='42' cy='21' rx='7' ry='13' fill='%23efc394' transform='rotate(20 42 21)'/%3E%3Cellipse cx='32' cy='40' rx='20' ry='18' fill='%23f8ddbc'/%3E%3Ccircle cx='25' cy='39' r='2.4' fill='%234a3b32'/%3E%3Ccircle cx='39' cy='39' r='2.4' fill='%234a3b32'/%3E%3Cpath d='M32 44l-2.5 2M32 44l2.5 2' stroke='%23b97c6a' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="portrait.css">
-<link rel="stylesheet" href="parkour.css">
-</head>
-<body>
-<div id="rotate">
-  <div class="rotate-card">
-    <div class="rotate-phone"><span>📱</span></div>
-    <h2>把手机竖过来</h2>
-    <p>东的小兔屋是竖屏小游戏<br>旋转手机，房间会更高更可爱</p>
-    <button id="rotateFullscreen">全屏并尝试竖屏</button>
-  </div>
-</div>
-
-<main id="stage" aria-label="东的小兔屋，竖屏互动养成游戏">
-  <div class="room" aria-hidden="true">
-    <div class="wall"></div>
-    <div class="wall-trim"></div>
-    <div class="floor"></div>
-
-    <div class="window">
-      <div class="sky">
-        <div class="sun"></div>
-        <div class="cloud c1"></div>
-        <div class="cloud c2"></div>
-        <div class="tree t1"></div>
-        <div class="tree t2"></div>
-        <div class="tree t3"></div>
-      </div>
-      <div class="window-bar v"></div>
-      <div class="window-bar h"></div>
-      <div class="window-sill"></div>
-    </div>
-    <div class="curtain left"></div>
-    <div class="curtain right"></div>
-    <div class="beam b1"></div>
-    <div class="beam b2"></div>
-
-    <div class="shelf">
-      <div class="shelf-board"></div>
-      <div class="book b1"></div><div class="book b2"></div><div class="book b3"></div><div class="book b4"></div>
-      <div class="shelf-plant"><span>🌿</span></div>
-      <div class="mini-frame"><img src="bunny_photo.jpg" alt=""></div>
-    </div>
-
-    <div class="wall-pic"><span>🌼</span></div>
-
-    <div class="sofa">
-      <div class="sofa-back"></div>
-      <div class="sofa-seat"></div>
-      <div class="sofa-arm left"></div>
-      <div class="sofa-arm right"></div>
-      <div class="sofa-cushion check"></div>
-      <div class="sofa-cushion carrot">🥕</div>
-      <div class="sofa-leg l"></div><div class="sofa-leg r"></div>
-    </div>
-
-    <div class="cat-tree">
-      <div class="tree-pole"></div>
-      <div class="tree-base"></div>
-      <div class="tree-house">
-        <div class="tree-ear left"></div><div class="tree-ear right"></div>
-        <div class="tree-hole"></div>
-      </div>
-      <div class="tree-platform"></div>
-      <div class="tree-ball">🧶</div>
-    </div>
-
-    <div class="plant">
-      <div class="pot"></div>
-      <div class="leaves">🌿</div>
-    </div>
-
-    <div class="rug">
-      <div class="rug-inner"></div>
-      <div class="paw p1">🐾</div><div class="paw p2">🐾</div><div class="paw p3">🐾</div>
-    </div>
-
-    <div class="dust d1"></div><div class="dust d2"></div><div class="dust d3"></div><div class="dust d4"></div>
-  </div>
-
-  <div class="pet-wrap" id="petWrap">
-    <div class="pet-shadow"></div>
-    <img class="pet-img" id="petImg" src="bunny.png" alt="东，一只金橘色的小兔子" draggable="false">
-    <div class="pet-blush" aria-hidden="true"><i></i><i></i></div>
-    <div class="pet-acc" id="petAcc" aria-hidden="true"></div>
-    <div class="speech" id="speech" role="status" aria-live="polite">鸦鸦主人～<br>你回来啦！</div>
-  </div>
-
-  <div id="fxLayer" aria-hidden="true"></div>
-
-  <header class="hud">
-    <section class="profile panel">
-      <div class="avatar-wrap">
-        <img src="bunny_photo.jpg" alt="东的头像">
-        <span class="level-badge" id="levelBadge">1</span>
-      </div>
-      <div class="profile-info">
-        <div class="name-row"><b id="petName">东</b><span id="lvText">Lv.1</span></div>
-        <div class="heart-row">
-          <span class="heart">❤️</span>
-          <div class="heart-bar"><i id="bondFill"></i></div>
-          <em id="bondText">35/100</em>
-        </div>
-      </div>
-      <button class="edit-name" id="editName" aria-label="给兔子改名">✎</button>
-    </section>
-
-    <section class="stats">
-      <div class="stat-card" id="statHunger">
-        <span class="stat-ico">🍽️</span>
-        <div class="stat-body">
-          <div class="stat-line"><span>饱腹</span><b id="hungerVal">78%</b></div>
-          <div class="stat-bar"><i id="hungerBar"></i></div>
-        </div>
-      </div>
-      <div class="stat-card" id="statMood">
-        <span class="stat-ico">😊</span>
-        <div class="stat-body">
-          <div class="stat-line"><span>心情</span><b id="moodVal">82%</b></div>
-          <div class="stat-bar"><i id="moodBar"></i></div>
-        </div>
-      </div>
-      <div class="stat-card" id="statEnergy">
-        <span class="stat-ico">⚡</span>
-        <div class="stat-body">
-          <div class="stat-line"><span>精力</span><b id="energyVal">86%</b></div>
-          <div class="stat-bar"><i id="energyBar"></i></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="currency">
-      <div class="currency-pill coin"><span>🪙</span><b id="coinVal">500</b><button data-shop="coin" aria-label="获取金币">+</button></div>
-      <div class="currency-pill gem"><span>💎</span><b id="gemVal">10</b><button data-shop="gem" aria-label="获取宝石">+</button></div>
-      <button class="gear" id="settingsBtn" aria-label="设置">⚙️</button>
-    </section>
-  </header>
-
-  <aside class="rail rail-left">
-    <button class="side-btn" data-open="checkin"><span class="side-ico blue">📅</span><b>签到</b></button>
-    <button class="side-btn" data-open="rewards"><span class="side-ico pink">🎁</span><b>奖励</b></button>
-    <button class="side-btn" data-open="minigame"><span class="side-ico purple">🎮</span><b>小游戏</b></button>
-  </aside>
-
-  <aside class="rail rail-right">
-    <button class="side-btn" data-open="adventure"><span class="side-ico green">🗺️</span><b>冒险</b></button>
-    <button class="side-btn" data-open="battle"><span class="side-ico orange">⚔️</span><b>战斗</b></button>
-    <button class="side-btn" data-open="parkour"><span class="side-ico peach">🏃</span><b>跑酷</b></button>
-  </aside>
-
-  <div class="bond-card panel">
-    <div class="bond-title"><span>💗 亲密度</span><em id="bondLevelSmall">Lv.1</em></div>
-    <div class="bond-bar"><i id="bondFill2"></i></div>
-    <div class="bond-num"><span id="bondText2">35 / 100</span><span>和东的每一天</span></div>
-  </div>
-
-  <div class="action-bar">
-    <button class="action-btn" data-action="pet"><span class="act-ico">🤚</span><span>抚摸</span></button>
-    <button class="action-btn" data-action="feed"><span class="act-ico">🥕</span><span>喂食</span></button>
-    <button class="action-btn" data-action="play"><span class="act-ico">🧶</span><span>玩耍</span></button>
-    <button class="action-btn" data-action="affection"><span class="act-ico">💗</span><span>亲昵</span></button>
-    <button class="action-btn" data-action="dress"><span class="act-ico">👕</span><span>换装</span></button>
-    <button class="action-btn" data-action="sleep"><span class="act-ico">😴</span><span>睡觉</span></button>
-  </div>
-
-  <button class="heal-btn" id="healBtn">
-    <span class="heal-ico">❤️‍🩹</span>
-    <b>恢复</b>
-    <em>休息一下</em>
-  </button>
-
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <div id="overlayRoot"></div>
-  <div id="gameRoot"></div>
-
-  <div id="parkourRoot" aria-hidden="true">
-    <div class="pk">
-      <canvas id="pkCanvas" width="1000" height="2000"></canvas>
-
-      <div class="pk-hud">
-        <div class="pk-stat"><span>距离</span><b id="pkDist">0</b><em>m</em></div>
-        <div class="pk-stat"><span>得分</span><b id="pkScore">0</b></div>
-        <div class="pk-best">最佳 <b id="pkBest">0</b></div>
-        <div class="pk-hud-btns">
-          <button id="pkPause" aria-label="暂停">❚❚</button>
-          <button id="pkQuit" aria-label="退出">×</button>
-        </div>
-      </div>
-
-      <div class="pk-controls" id="pkControls">
-        <button data-pk="left" aria-label="向左换道"><b>←</b><small>左</small></button>
-        <button data-pk="jump" aria-label="跳跃" class="pk-jump"><b>↑</b><small>跳</small></button>
-        <button data-pk="slide" aria-label="滑铲" class="pk-slide"><b>↓</b><small>滑</small></button>
-        <button data-pk="right" aria-label="向右换道"><b>→</b><small>右</small></button>
-      </div>
-
-      <div class="pk-overlay show" id="pkStart">
-        <div class="pk-card pk-start-card">
-          <div class="pk-kicker">🐇 东的跑酷</div>
-          <h2>胡萝卜跑酷</h2>
-          <p>三条车道，躲开卡车和路障<br>左右换道 · 上滑跳跃 · 下滑滑铲</p>
-          <div class="pk-how">
-            <div><span>← →</span><small>换道</small></div>
-            <div><span>↑</span><small>跳过路障</small></div>
-            <div><span>↓</span><small>滑过横杆</small></div>
-          </div>
-          <button class="pk-primary" id="pkStartBtn">开始跑酷</button>
-          <button class="pk-ghost" id="pkStartClose">回小屋</button>
-        </div>
-      </div>
-
-      <div class="pk-overlay" id="pkPauseOver">
-        <div class="pk-card">
-          <div class="pk-kicker">☕ 暂停</div>
-          <h2>休息一下</h2>
-          <p>东在路边等你。</p>
-          <button class="pk-primary" id="pkResume">继续跑</button>
-          <button class="pk-ghost" id="pkExit">退出跑酷</button>
-        </div>
-      </div>
-
-      <div class="pk-overlay" id="pkOver">
-        <div class="pk-card" id="pkOverCard"></div>
-      </div>
-
-      <div class="pk-count" id="pkCount"></div>
-    </div>
-  </div>
-
-  <div class="night-layer" id="nightLayer" aria-hidden="true">
-    <div class="night-moon"></div>
-    <i class="nstar s1"></i><i class="nstar s2"></i><i class="nstar s3"></i><i class="nstar s4"></i><i class="nstar s5"></i>
-    <div class="night-zzz"><i>z</i><i>z</i><i>z</i></div>
-    <p>晚安，东</p>
-    <button id="wakeBtn">轻轻叫醒它</button>
-  </div>
-
-  <div class="name-dialog" id="nameDialog" aria-hidden="true">
-    <div class="name-card">
-      <h3>给它取个名字</h3>
-      <input id="nameInput" maxlength="8" value="东" aria-label="兔子的名字">
-      <div class="name-actions"><button id="nameCancel">取消</button><button id="nameSave">保存</button></div>
-    </div>
-  </div>
-</main>
-
-<script src="game.js"></script>
-</body>
-</html>
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#f4e5d2"><title>东和鸦鸦主人的小世界</title>
+<style>
+:root{--ink:#594333;--muted:#9c8068;--cream:#fff8ed;--pink:#f18fa2;--gold:#e8b65e;--green:#86ad73;--line:#f1dfc9}*{box-sizing:border-box}body{margin:0;background:#ead8c2;color:var(--ink);font-family:system-ui,-apple-system,"PingFang SC",sans-serif}button{font:inherit;border:0;cursor:pointer;touch-action:manipulation;color:inherit}#app{width:min(100%,520px);min-height:100svh;margin:auto;position:relative;overflow:hidden;padding:calc(env(safe-area-inset-top) + 10px) 14px calc(env(safe-area-inset-bottom) + 14px);background:linear-gradient(#d8e9e2 0%,#f5e6ce 38%,#d7ad82 100%)}.sunroom{position:absolute;inset:0 0 auto;height:36%;background:linear-gradient(90deg,#b6d9d9,#fff0c8 52%,#b7d9d7);border-bottom:10px solid #fff4e3}.sunroom:before{content:"";position:absolute;inset:0 17%;border-left:7px solid #fff7e9;border-right:7px solid #fff7e9;box-shadow:inset 120px 0 #ffffff15}.sunroom:after{content:"☀️　☁️";position:absolute;right:10%;top:13%;font-size:28px}.floor{position:absolute;bottom:0;left:0;right:0;height:37%;background:repeating-linear-gradient(0deg,#bd895e 0 36px,#d3a276 37px 40px);border-top:9px solid #ebc99e}.sofa{position:absolute;left:-7%;top:30%;width:57%;height:22%;border-radius:28px;background:linear-gradient(140deg,#b2bfd7,#7386ad);box-shadow:inset 0 9px #e0e5ef,0 12px 15px #67472b35}.sofa:after{content:"🥕";position:absolute;right:0;top:-35px;font-size:65px}.shelf{position:absolute;right:-3px;top:27%;width:25%;height:26%;background:#bd8b5c;border:8px solid #d6a877;border-radius:12px 0 0 12px}.shelf:after{content:"📚　🪴　🖼️";font-size:21px}.rug{position:absolute;left:8%;right:8%;bottom:18%;height:19%;border-radius:50%;background:radial-gradient(ellipse,#fff0dc,#e6cdb6);box-shadow:0 8px 13px #68482c35}.header,.meters,.stage,.actions,.progress,.dock{position:relative;z-index:2}.header{display:flex;justify-content:space-between;align-items:center;gap:6px}.profile,.wallet{display:flex;align-items:center;gap:8px;background:#fff9e9ed;border:2px solid white;border-radius:25px;padding:5px 10px;font-size:13px;font-weight:900;box-shadow:0 3px 10px #79553220}.portrait{width:45px;height:45px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff7e4,#d9b27f);border:2px solid white;display:grid;place-items:center;font-size:30px}.small{font-size:10px;color:#a18266}.meters{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0}.meter{background:#fff9edeb;border:2px solid white;border-radius:14px;padding:7px 3px;text-align:center;font-size:11px}.meter b{display:block;font-size:16px;color:#71a65c}.stage{height:clamp(310px,43svh,430px);min-height:310px}.bunny{position:absolute;z-index:3;left:50%;bottom:17%;width:200px;height:238px;transform:translateX(-50%);filter:drop-shadow(0 12px 9px #65472b45);animation:bob 3.4s ease-in-out infinite;cursor:pointer}.ear{position:absolute;top:0;width:55px;height:125px;border-radius:55% 55% 44% 44%;background:linear-gradient(90deg,#c99660,#fff1d8 48%,#dcb889);border:2px solid #e7cba4}.ear:after{content:"";position:absolute;inset:14px 14px 18px;border-radius:50%;background:#e9aaa3;opacity:.65}.ear.one{left:42px;transform:rotate(-13deg)}.ear.two{right:39px;height:108px;transform:rotate(12deg)}.head{position:absolute;bottom:0;left:5px;width:190px;height:185px;border-radius:49% 49% 44% 44%;background:radial-gradient(ellipse at 35% 23%,#fff9e9 0,#f8e5c5 48%,#d9b27f 100%);border:2px solid #ead1ae;box-shadow:inset -10px -9px 16px #bd956b35}.eye{position:absolute;top:73px;width:13px;height:19px;border-radius:50%;background:#30231d;box-shadow:inset 3px 3px white}.eye.a{left:52px}.eye.b{right:52px}.nose{position:absolute;top:105px;left:50%;width:11px;height:8px;border-radius:50%;background:#bd8178;transform:translateX(-50%)}.mouth{position:absolute;top:111px;left:50%;transform:translateX(-50%);font-size:18px;color:#855b4d}.cheek{position:absolute;top:105px;width:24px;height:12px;border-radius:50%;background:#efa4a0a8}.cheek.a{left:23px}.cheek.b{right:23px}.hat{position:absolute;z-index:5;top:-8px;left:50%;transform:translateX(-50%);font-size:42px;filter:drop-shadow(0 3px 2px #7d563d45)}.speech{position:absolute;right:2%;top:9%;max-width:58%;background:#fffaf1;border:2px solid white;border-radius:19px;padding:10px 12px;font-size:12px;box-shadow:0 4px 10px #65472b20}.speech:after{content:"";position:absolute;bottom:-9px;left:18px;border-width:9px 9px 0;border-style:solid;border-color:#fffaf1 transparent transparent}.shortcut{position:absolute;top:22%;z-index:4;display:grid;gap:9px}.shortcut.left{left:0}.shortcut.right{right:0}.shortcut button{width:61px;border:2px solid white;border-radius:17px;background:#fffaf0ed;padding:7px 2px;font-size:11px;font-weight:900;box-shadow:0 4px 9px #60432b25}.shortcut span{display:block;font-size:27px}.actions{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;padding:7px;background:#fff5e8e8;border:2px solid white;border-radius:22px;margin-top:-5px}.actions button{border-radius:15px;background:linear-gradient(#fff,#ecdac7);box-shadow:0 3px #c9a98a;padding:7px 1px;font-size:11px;font-weight:900}.actions span{display:block;font-size:25px}.progress{background:#fff9efed;border:2px solid white;border-radius:16px;padding:8px 11px;margin-top:9px;font-size:11px}.prow{display:flex;justify-content:space-between;font-weight:900}.bar{height:7px;background:#e8d7c5;border-radius:10px;margin:4px 0 7px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,#f19bab,#efc16f)}.dock{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}.dock button{border-radius:13px;background:#f0d2b0;padding:9px 2px;font-size:11px;font-weight:900;box-shadow:0 3px #c49a71}.dock span{display:block;font-size:21px}.overlay{position:fixed;inset:0;z-index:20;background:#302116a8;display:none;align-items:flex-end;justify-content:center;padding:10px}.panel{width:min(500px,100%);max-height:88svh;overflow:auto;background:#fff8ec;border:3px solid white;border-radius:25px;padding:16px;box-shadow:0 12px 35px #28180f55}.panel h2{font-size:19px;margin:0 0 6px}.panel p{font-size:12px;line-height:1.6;color:#866d57}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.card{background:#f3e4d1;border-radius:15px;padding:11px;text-align:center;font-size:12px}.card strong{display:block;font-size:26px;margin-bottom:4px}.btn{background:#e8a16e;color:white;border-radius:20px;padding:10px 14px;font-weight:900;margin:4px}.btn.alt{background:#ead9c5;color:#684a34}.toast{position:fixed;z-index:40;top:12%;left:50%;transform:translateX(-50%);background:#fff9ed;border:2px solid white;border-radius:20px;padding:10px 16px;font-size:12px;font-weight:900;display:none;box-shadow:0 5px 16px #50341f40}.runner{width:100%;height:340px;border-radius:16px;background:linear-gradient(#b9dce2,#f3dfb6 65%,#c18a5c 65%);display:block;touch-action:pan-y}.controls{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:8px}.controls button{background:#f0dfcc;border-radius:12px;padding:11px 2px;font-weight:900}.map{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.map button{min-height:75px;background:#e7edcf;border:2px solid white;border-radius:14px;font-size:12px;font-weight:900}.map button b{display:block;font-size:26px}.inventory{display:flex;gap:7px;flex-wrap:wrap}.tag{padding:7px 10px;background:#f0e0cc;border-radius:15px;font-size:12px}@keyframes bob{50%{transform:translate(-50%,-8px)}}@media(max-height:700px){.stage{height:36svh;min-height:255px}.bunny{transform:translateX(-50%) scale(.84);transform-origin:bottom center}.meters{margin:6px 0}.actions{padding:5px}.progress{padding:6px 9px}.dock{margin-top:6px}}
+</style></head><body><main id="app"><div class="sunroom"></div><div class="sofa"></div><div class="shelf"></div><div class="floor"></div><div class="rug"></div>
+<header class="header"><div class="profile"><div class="portrait">🐰</div><div>东<div class="small">Lv.<b id="lv">1</b> · 鸦鸦主人的小兔</div></div></div><div class="wallet">🪙 <b id="coins">500</b>　💎 <b id="gems">10</b></div></header>
+<section class="meters"><div class="meter">🥕 饱腹<b id="food">100%</b></div><div class="meter">💗 心情<b id="mood">100%</b></div><div class="meter">⚡ 精力<b id="energy">100%</b></div></section>
+<section class="stage"><div class="speech" id="speech">鸦鸦主人～东等你回来摸摸我！💗</div><div class="shortcut left"><button onclick="daily()"><span>🗓️</span>签到</button><button onclick="claim()"><span>🎁</span>奖励</button><button onclick="openPanel('亲昵互动')"><span>💕</span>亲昵</button></div><div class="shortcut right"><button onclick="openPanel('冒险')"><span>🗺️</span>冒险</button><button onclick="openPanel('跑酷')"><span>🏃</span>跑酷</button><button onclick="openPanel('战斗')"><span>🛡️</span>战斗</button></div>
+<div class="bunny" id="bunny"><div class="hat" id="hat">🎀</div><div class="ear one"></div><div class="ear two"></div><div class="head"><i class="eye a"></i><i class="eye b"></i><i class="nose"></i><i class="mouth">ω</i><i class="cheek a"></i><i class="cheek b"></i></div></div></section>
+<section class="actions"><button onclick="act('摸摸')"><span>🖐🏻</span>摸摸</button><button onclick="act('喂食')"><span>🥕</span>喂食</button><button onclick="act('玩耍')"><span>🧶</span>玩耍</button><button onclick="openPanel('服装')"><span>👗</span>服装</button><button onclick="act('睡觉')"><span>🛏️</span>睡觉</button></section>
+<section class="progress"><div class="prow"><span>💗 亲密度 · Lv.<b id="lv2">1</b></span><span><b id="bond">0</b>/100</span></div><div class="bar"><i id="bondbar" style="width:0%"></i></div><div class="prow"><span>🌱 成长经验</span><span id="xp">0/100</span></div><div class="bar"><i id="xpbar" style="width:0%"></i></div><div class="prow"><span>🏅 累计跑酷距离</span><span id="best">0 m</span></div></section>
+<nav class="dock"><button onclick="openPanel('任务')"><span>📋</span>任务</button><button onclick="openPanel('商店')"><span>🛍️</span>商店</button><button onclick="openPanel('图鉴')"><span>📖</span>图鉴</button><button onclick="openPanel('等级奖励')"><span>🏆</span>等级奖励</button></nav></main>
+<div class="toast" id="toast"></div><div class="overlay" id="overlay"><section class="panel"><h2 id="ptitle"></h2><p id="pdesc"></p><div id="body"></div><button class="btn alt" onclick="closePanel()">回到兔兔房间</button></section></div>
+<script>
+const initial={coins:500,gems:10,food:100,mood:100,energy:100,bond:0,xp:0,level:1,checked:"",claimed:"",outfit:"🎀",owned:["🎀"],best:0,items:[],quests:[],adventure:0};let s={...initial,...JSON.parse(localStorage.getItem("dong-v4")||"{}")};const $=id=>document.getElementById(id);function save(){localStorage.setItem("dong-v4",JSON.stringify(s));render()}function render(){["coins","gems","food","mood","energy","level","bond"].forEach(k=>{let e=$(k==="level"?"lv":k);if(e)e.textContent=s[k]+(["food","mood","energy"].includes(k)?"%":"")});$("lv2").textContent=s.level;$("xp").textContent=s.xp+"/100";$("bondbar").style.width=s.bond+"%";$("xpbar").style.width=s.xp+"%";$("best").textContent=s.best+" m";$("hat").textContent=s.outfit}function say(t){$("speech").textContent=t;$("toast").textContent=t;$("toast").style.display="block";clearTimeout(window.toastT);window.toastT=setTimeout(()=>$("toast").style.display="none",1900)}function gain(n){s.xp+=n;s.bond=Math.min(100,s.bond+Math.ceil(n/2));while(s.xp>=100){s.xp-=100;s.level++;let reward=100+s.level*25;s.coins+=reward;s.gems+=2;say("鸦鸦主人！东升级到 Lv."+s.level+" 啦，奖励金币 "+reward+" 和钻石×2！🎉")}}function act(a){if(a==="摸摸"){s.mood=Math.min(100,s.mood+12);gain(5);say(["鸦鸦主人摸摸～东的耳朵都开心地竖起来啦！💗","再摸一下嘛，东最喜欢鸦鸦主人啦！","呼噜呼噜，今天也想一直陪着鸦鸦主人～"][Math.floor(Math.random()*3)])}if(a==="喂食"){if(s.coins<12)return say("鸦鸦主人，胡萝卜钱不够啦");s.coins-=12;s.food=Math.min(100,s.food+25);s.mood=Math.min(100,s.mood+5);gain(6);say("啊呜啊呜！谢谢鸦鸦主人投喂，东吃得肚肚圆滚滚🥕")}if(a==="玩耍"){if(s.energy<15)return say("东有点累啦，鸦鸦主人陪我睡一会儿嘛");s.energy-=15;s.mood=Math.min(100,s.mood+16);gain(8);say("毛线球飞起来啦！和鸦鸦主人玩是东最幸福的事！")}if(a==="睡觉"){s.energy=100;s.mood=Math.min(100,s.mood+5);gain(2);say("晚安鸦鸦主人～东要梦见你啦！🌙")}save()}$("bunny").onclick=()=>act("摸摸");function daily(){let d=new Date().toLocaleDateString();if(s.checked===d)return say("鸦鸦主人今天已经签到啦，明天还有礼物哦");s.checked=d;s.coins+=100;s.gems++;gain(12);say("签到成功！鸦鸦主人和东的每日约定完成啦！金币+100");save()}function claim(){let d=new Date().toLocaleDateString();if(s.claimed===d)return say("今日礼物已经收下啦，明天再来哦");s.claimed=d;s.coins+=60;gain(8);say("鸦鸦主人送来的礼物，东会好好珍藏！金币+60🎁");save()}
+function openPanel(name){$("overlay").style.display="flex";$("ptitle").textContent=name;$("pdesc").textContent="和东一起慢慢成长，解锁更多小小惊喜。";let c=$("body");c.innerHTML="";c.className="";function btn(t,f){let b=document.createElement("button");b.className="btn";b.textContent=t;b.onclick=f;c.append(b)}function tile(e,t,d){let x=document.createElement("div");x.className="card";x.innerHTML="<strong>"+e+"</strong>"+t+"<br><small>"+d+"</small>";c.append(x)}
+if(name==="亲昵互动"){c.className="grid";[["💞","贴贴抱抱","亲密度 +8"],["🐰","挠挠下巴","心情 +12"],["💬","说悄悄话","随机暖心回应"],["🎵","唱摇篮曲","精力恢复 +15"]].forEach(x=>tile(...x));btn("抱抱东",()=>{s.bond=Math.min(100,s.bond+8);s.mood=Math.min(100,s.mood+10);say("抱紧鸦鸦主人！东把小脑袋靠在你怀里啦💗");save()});btn("说：我回来啦",()=>say("鸦鸦主人欢迎回家！东一直在门口等你呢！"))}
+else if(name==="服装"){c.className="grid";[["🎀","软萌蝴蝶结",0],["👑","闪闪小皇冠",80],["🧢","胡萝卜鸭舌帽",100],["🧣","奶油围巾",120],["🌸","樱花发饰",160],["🪽","云朵小翅膀",220]].forEach(([e,t,cost])=>{let b=document.createElement("button");b.className="card";b.innerHTML="<strong>"+e+"</strong>"+t+"<br><small>"+(s.owned.includes(e)?"已拥有":cost+"金币")+"</small>";b.onclick=()=>{if(!s.owned.includes(e)){if(s.coins<cost)return say("金币不够，鸦鸦主人陪东做任务吧");s.coins-=cost;s.owned.push(e)}s.outfit=e;say("东穿上新衣服啦！鸦鸦主人觉得可爱吗？"+e);save();openPanel("服装")};c.append(b)})}
+else if(name==="商店"){c.className="grid";[["🥕","胡萝卜套餐",25,1],["🍓","甜甜草莓",35,2],["🧸","抱抱玩偶",70,3],["🪙","金币小礼包",0,4]].forEach(([e,t,cost,type])=>{let b=document.createElement("button");b.className="card";b.innerHTML="<strong>"+e+"</strong>"+t+"<br><small>"+(cost?cost+"金币":"免费体验")+"</small>";b.onclick=()=>{if(type===4){s.coins+=20}else{if(s.coins<cost)return say("金币不够啦");s.coins-=cost;if(type===1)s.food=Math.min(100,s.food+35);if(type===2){s.food=Math.min(100,s.food+12);s.mood=Math.min(100,s.mood+15)}if(type===3)s.mood=Math.min(100,s.mood+18)}gain(3);save();say("购买成功！东开心地蹦起来啦")};c.append(b)})}
+else if(name==="任务"){c.className="grid";[["🖐️","摸摸东","点击兔子或摸摸"],["🥕","喂食一次","让饱腹值保持充足"],["🏃","跑酷挑战","收集金币和胡萝卜"],["🗺️","冒险探索","发现森林宝箱"]].forEach(x=>tile(...x));btn("领取今日任务奖励 +80金币",()=>{s.coins+=80;gain(10);save();say("任务完成！鸦鸦主人和东都是行动派！")})}
+else if(name==="等级奖励"){c.className="grid";[2,3,5,8,10,15].forEach(l=>tile("🏆","Lv."+l+" 专属礼物",s.level>=l?"已达到 · 可领取":"还差 "+(l-s.level)+" 级"));btn("领取当前等级礼包",()=>{let r=s.level*35;s.coins+=r;s.gems+=Math.floor(s.level/3);say("等级礼包到账！金币+"+r);save()})}
+else if(name==="图鉴"){c.className="grid";[["🐰","东","鸦鸦主人的小兔子"],["🥕","胡萝卜","东最喜欢的食物"],["🌲","迷雾森林","冒险地图"],["🏅","勇者徽章","跑酷和冒险纪念"]].forEach(x=>tile(...x));let inv=document.createElement("div");inv.className="inventory";s.owned.forEach(x=>{let t=document.createElement("span");t.className="tag";t.textContent=x+" 已收藏";inv.append(t)});c.append(inv)}
+else if(name==="跑酷"){c.innerHTML='<canvas class="runner" id="runCanvas" width="420" height="560"></canvas><div class="controls"><button id="left">⬅ 左移</button><button id="jump">⬆ 跳跃</button><button id="right">右移 ➡</button><button id="slide">⬇ 滑行</button><button id="start">开始 / 重来</button><button id="pause">暂停</button></div><p>三条跑道：左右切换躲避障碍，跳过木箱，滑过低横杆，收集胡萝卜。也可在画面上左右滑动。</p>';startRunner()}
+else if(name==="冒险"){c.innerHTML='<div class="map" id="map"><button data-i="0"><b>🌳</b>森林入口</button><button data-i="1"><b>🍄</b>蘑菇小径</button><button data-i="2"><b>🏚️</b>守林人小屋</button><button data-i="3"><b>🌉</b>月光桥</button><button data-i="4"><b>🗝️</b>古树遗迹</button><button data-i="5"><b>🎁</b>宝箱秘境</button></div><p id="adtext">点击地点探索。每次探索会消耗少量精力，可能遇到小怪、找到材料或宝箱。</p>';c.querySelectorAll("[data-i]").forEach(b=>b.onclick=()=>explore(+b.dataset.i))}
+else if(name==="战斗"){let hp=60,me=100;c.innerHTML='<div class="card"><strong>🐺</strong>森林捣蛋狼 · HP <span id="ehp">60</span><br>🐰 东 · HP <span id="php">100</span></div>';btn("🥕 胡萝卜投掷",()=>{hp=Math.max(0,hp-18);me=Math.max(0,me-7);$("ehp").textContent=hp;$("php").textContent=me;if(hp===0){s.coins+=55;gain(20);say("胜利！东保护了森林，鸦鸦主人快夸夸我！");save()}else if(me===0)say("东需要休息，喂点胡萝卜再来吧")});btn("🌟 必杀：爱心冲击",()=>{hp=Math.max(0,hp-35);$("ehp").textContent=hp;if(!hp){s.coins+=55;gain(20);save();say("爱心必杀成功！获得55金币")}})}
+}
+function explore(i){if(s.energy<8)return say("东累啦，鸦鸦主人先让我休息一会儿");s.energy-=8;s.adventure++;let roll=Math.random();let msg;if(roll<.35){let r=25+Math.floor(Math.random()*45);s.coins+=r;msg="发现宝箱！金币+"+r+" 🎁"}else if(roll<.65){s.items.push(["🍄","🌼","🪵"][Math.floor(Math.random()*3)]);msg="找到稀有材料！已放入背包"}else{gain(10);msg="遇到友善的小动物，获得成长经验！"}$("adtext").textContent=["森林入口","蘑菇小径","守林人小屋","月光桥","古树遗迹","宝箱秘境"][i]+"： "+msg;save()}
+let runner=null;function startRunner(){let cv=$("runCanvas"),ctx=cv.getContext("2d"),lane=1,playerY=450,vy=0,slide=0,obstacles=[],carrots=[],distance=0,score=0,alive=false,raf=0,last=0;function spawn(){let l=Math.floor(Math.random()*3),kind=Math.random()<.23?"low":Math.random()<.5?"jump":"block";obstacles.push({l,y:-50,kind});if(Math.random()<.7)carrots.push({l:(l+Math.floor(Math.random()*3))%3,y:-120})}function draw(t){ctx.clearRect(0,0,420,560);ctx.fillStyle="#e8d2ae";ctx.fillRect(0,360,420,200);ctx.fillStyle="#8eaa86";ctx.fillRect(0,0,420,360);ctx.fillStyle="#b8c99e";ctx.fillRect(55,0,310,560);for(let i=1;i<3;i++){ctx.strokeStyle="#fff4dc99";ctx.setLineDash([18,16]);ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(55+i*103,0);ctx.lineTo(55+i*103,560);ctx.stroke()}ctx.setLineDash([]);ctx.fillStyle="#fff7e8";ctx.font="bold 20px sans-serif";ctx.fillText("森林疾跑  "+Math.floor(distance)+"m",14,30);ctx.fillText("🥕 "+score,330,30);for(const o of obstacles){let x=106+o.l*103;ctx.font="34px sans-serif";ctx.fillText(o.kind==="low"?"━":o.kind==="jump"?"🪵":"🪨",x-18,o.y)}for(const a of carrots){ctx.font="25px sans-serif";ctx.fillText("🥕",106+a.l*103-14,a.y)}ctx.font="58px sans-serif";ctx.fillText(slide>0?"🐇":"🐰",106+lane*103-30,playerY+(vy?Math.sin(t/60)*-5:0));if(!alive){ctx.fillStyle="#563d2b";ctx.font="bold 24px sans-serif";ctx.fillText("点击开始，滑动或按键控制",42,270)}}function step(ts){if(!alive){draw(ts);return}let dt=Math.min((ts-last)/16||1,2);last=ts;distance+=.16*dt;if(Math.random()<.025*dt)spawn();for(const o of obstacles)o.y+=4.2*dt;for(const a of carrots)a.y+=4.2*dt;obstacles=obstacles.filter(o=>o.y<600);carrots=carrots.filter(a=>a.y<600);if(vy){playerY+=vy*dt;vy+=.65*dt;if(playerY>450){playerY=450;vy=0}}if(slide>0)slide-=dt;for(let i=obstacles.length-1;i>=0;i--){let o=obstacles[i];if(o.y>410&&o.y<480&&o.l===lane){let safe=o.kind==="low"?slide>0:o.kind==="jump"?playerY<390:playerY<390||slide>0;if(!safe){alive=false;cancelAnimationFrame(raf);say("撞到障碍啦！本局 "+Math.floor(distance)+" 米，收集 "+score+" 根");s.best=Math.max(s.best,Math.floor(distance));s.coins+=score*4+Math.floor(distance/10);gain(Math.floor(distance/18)+score);save();draw(ts);return}obstacles.splice(i,1)}}for(let i=carrots.length-1;i>=0;i--)if(carrots[i].y>410&&carrots[i].y<480&&carrots[i].l===lane){score++;carrots.splice(i,1)}draw(ts);raf=requestAnimationFrame(step)}function begin(){obstacles=[];carrots=[];distance=0;score=0;lane=1;playerY=450;vy=0;alive=true;last=performance.now();cancelAnimationFrame(raf);raf=requestAnimationFrame(step)}function move(n){lane=Math.max(0,Math.min(2,lane+n))}function jump(){if(playerY>=449)vy=-11}function duck(){slide=28} $("left").onclick=()=>move(-1);$("right").onclick=()=>move(1);$("jump").onclick=jump;$("slide").onclick=duck;$("start").onclick=begin;$("pause").onclick=()=>{alive=false;cancelAnimationFrame(raf);draw(performance.now())};let sx=0;cv.ontouchstart=e=>{sx=e.touches[0].clientX};cv.ontouchend=e=>{let dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>25)move(dx>0?1:-1);else jump()};cv.onclick=()=>{if(!alive)begin()};draw(0)}
+function closePanel(){$("overlay").style.display="none"}render();setInterval(()=>{s.food=Math.max(0,s.food-1);if(s.food<20)s.mood=Math.max(0,s.mood-1);if(s.energy<100&&s.food>15)s.energy=Math.min(100,s.energy+1);save()},90000);
+</script></body></html>
