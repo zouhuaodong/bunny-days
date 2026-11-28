@@ -43,3 +43,13 @@ https://zouhuaodong.github.io/bunny-days/
 - `game.js`：状态、互动、小游戏和跑酷
 - `bunny.png` / `bunny_photo.jpg`：东的照片素材
 - `qr-github.png`：在线地址二维码
+
+---
+
+## 🐰 饿疯兔小屋（站点首页）
+
+站点首页现在是 **饿疯兔小屋**：一只住在网页里的饿疯兔，摸摸 / 喂小鱼干 / 三个小游戏（躲猫猫、堆纸箱、接小鱼）/ 布置小窝，进度存在浏览器 localStorage。
+
+- 文件：index.html + ef-house.css + ef-house.js + ef-assets/（与原来东的小屋文件互不冲突）
+- 兼容微信内置浏览器（X5 / WKWebView）：不用 clamp()、spect-ratio、inset、flex gap、grid，交互走 touch + mouse 双通道，存档改成文本复制粘贴而非下载
+- 之前的「东和鸦鸦主人的小世界」**完整保留**在 dong.html，内容和素材一个没动
